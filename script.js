@@ -16,6 +16,7 @@ const DOM = {
     weatherIcon: document.getElementById('weather-icon'),
     windSpeed: document.getElementById('wind-speed'),
     unitToggle: document.getElementById('unit-toggle'),
+    historyContainer: document.getElementById('search-history'),
 };
 
 // Речник за кодовете на времето (за по-добра визуализация)
@@ -77,6 +78,39 @@ function displayWeather(data, name, country) {
 }
 
 /**
+ * Записва град в LocalStorage и обновява интерфейса.
+ */
+function addToHistory(city) {
+    let history = JSON.parse(localStorage.getItem('weatherHistory')) || [];
+    
+    // Проверка дали градът вече го има (за да няма дубликати)
+    if (!history.includes(city)) {
+        history.push(city);
+        // Пазим само последните 5 търсения
+        if (history.length > 5) history.shift();
+        
+        localStorage.setItem('weatherHistory', JSON.stringify(history));
+        renderHistory();
+    }
+}
+
+/**
+ * Изчертава историята в HTML.
+ */
+function renderHistory() {
+    const history = JSON.parse(localStorage.getItem('weatherHistory')) || [];
+    DOM.historyContainer.innerHTML = ''; // Чистим старите
+    
+    history.forEach(city => {
+        const btn = document.createElement('span');
+        btn.className = 'history-item';
+        btn.textContent = city;
+        btn.onclick = () => fetchWeather(city); // При клик търси града отново
+        DOM.historyContainer.appendChild(btn);
+    });
+}
+
+/**
  * Основна функция за извличане на данни от API.
  * (Задача 4.2 - JSDoc коментар)
  * @param {string} city - Името на града.
@@ -101,6 +135,7 @@ async function fetchWeather(city) {
         const weatherData = await weatherResponse.json();
 
         displayWeather(weatherData.current_weather, name, country);
+        addToHistory(name);
 
     } catch (error) {
         showError(error.message);
@@ -133,3 +168,4 @@ DOM.unitToggle.addEventListener('click', () => {
     
     isCelsius = !isCelsius; // Обръщаме състоянието (true -> false или false -> true)
 });
+renderHistory(); // Зарежда историята веднага щом се отвори приложението
