@@ -1,0 +1,128 @@
+/* Базови настройки */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Sora', sans-serif; /* Отговаря на шрифта в заданието */
+    background: linear-gradient(135deg, #1e2535 0%, #0f1117 100%);
+    color: #e8eaf0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+/* Контейнер */
+.container {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 2.5rem;
+    border-radius: 24px;
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+}
+
+h1 {
+    font-size: 1.5rem;
+    margin-bottom: 1.5rem;
+    color: #4a9eff;
+}
+
+/* Форма и Търсене */
+#search-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+input {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px 16px;
+    border-radius: 12px;
+    color: white;
+    outline: none;
+    transition: 0.3s;
+}
+
+input:focus {
+    border-color: #4a9eff;
+}
+
+button {
+    background: #4a9eff;
+    color: white;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover {
+    background: #357abd;
+    transform: translateY(-2px);
+}
+
+/* Карта за времето */
+.weather-card {
+    margin-top: 2rem;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.main-info {
+    font-size: 3rem;
+    font-weight: 700;
+    margin: 1rem 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+}
+
+#weather-icon {
+    color: #f5a623;
+}
+
+.details {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    color: #7a8499;
+}
+
+/* Бутон за превключване на единици */
+.unit-btn {
+    background: transparent;
+    border: 1px solid #4a9eff;
+    color: #4a9eff;
+    margin-top: 1.5rem;
+    font-size: 0.9rem;
+    padding: 8px 16px;
+}
+
+.unit-btn:hover {
+    background: rgba(74, 158, 255, 0.1);
+}
+
+/* Статус съобщения */
+#error-message {
+    background: rgba(255, 107, 107, 0.1);
+    color: #ff6b6b;
+    padding: 10px;
+    border-radius: 8px;
+    margin-top: 10px;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}

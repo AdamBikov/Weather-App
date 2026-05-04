@@ -59,19 +59,19 @@ function showError(message) {
  * Визуализира данните за времето в интерфейса.
  */
 function displayWeather(data, name, country) {
-    currentTempCelsius = data.temperature; // ЗАПАЗВАМЕ ТЕМПЕРАТУРАТА ТУК
-    isCelsius = true; // Нулираме към Целзий при ново търсене
+    currentTempCelsius = data.temperature; 
+    isCelsius = true; 
     DOM.unitToggle.textContent = 'Към °F';
     DOM.cityName.textContent = `${name}, ${country}`;
-    DOM.temperature.textContent = `${Math.round(data.temperature)}°C`;
     DOM.windSpeed.textContent = data.windspeed;
     DOM.temperature.textContent = `${Math.round(currentTempCelsius)}°C`;
 
     const description = weatherDescriptions[data.weathercode] || "Неизвестно";
     DOM.weatherCondition.textContent = description;
 
-    // Тук може да добавите логика за иконки по-късно
-    DOM.weatherIcon.className = `fas fa-cloud fa-3x`; 
+    // Обновяваме иконата според кода (Задача 1.4 от PDF)
+    const iconClass = weatherIcons[data.weathercode] || "fa-cloud";
+    DOM.weatherIcon.className = `fas ${iconClass} fa-3x`; 
 
     DOM.weatherResult.style.display = 'block';
 }
