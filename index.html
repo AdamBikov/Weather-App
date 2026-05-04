@@ -1,1 +1,38 @@
 
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weather App - 9. клас</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Прогноза за времето</h1>
+        
+        <form id="search-form">
+            <input type="text" id="city-input" placeholder="Въведете град на английски..." required>
+            <button type="submit">Търси</button>
+        </form>
+
+        <div id="loading" style="display: none;">Зареждане...</div>
+        <div id="error-message" style="display: none;"></div>
+
+        <div id="weather-result" class="weather-card" style="display: none;">
+            <h2 id="city-name">--</h2>
+            <div class="main-info">
+                <i id="weather-icon" class="fas"></i>
+                <span id="temperature">--</span>
+            </div>
+            <p id="weather-condition">--</p>
+            <div class="details">
+                <span>Вятър: <strong id="wind-speed">--</strong> км/ч</span>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
