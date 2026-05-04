@@ -1,3 +1,5 @@
+let currentTempCelsius = null;
+let isCelsius = true;
 /**
  * Обект, съдържащ референции към всички важни DOM елементи.
  * (Задача 3.3 от заданието)
@@ -12,7 +14,8 @@ const DOM = {
     temperature: document.getElementById('temperature'),
     weatherCondition: document.getElementById('weather-condition'),
     weatherIcon: document.getElementById('weather-icon'),
-    windSpeed: document.getElementById('wind-speed')
+    windSpeed: document.getElementById('wind-speed'),
+    unitToggle: document.getElementById('unit-toggle'),
 };
 
 // Речник за кодовете на времето (за по-добра визуализация)
@@ -56,9 +59,13 @@ function showError(message) {
  * Визуализира данните за времето в интерфейса.
  */
 function displayWeather(data, name, country) {
+    currentTempCelsius = data.temperature; // ЗАПАЗВАМЕ ТЕМПЕРАТУРАТА ТУК
+    isCelsius = true; // Нулираме към Целзий при ново търсене
+    DOM.unitToggle.textContent = 'Към °F';
     DOM.cityName.textContent = `${name}, ${country}`;
     DOM.temperature.textContent = `${Math.round(data.temperature)}°C`;
     DOM.windSpeed.textContent = data.windspeed;
+    DOM.temperature.textContent = `${Math.round(currentTempCelsius)}°C`;
 
     const description = weatherDescriptions[data.weathercode] || "Неизвестно";
     DOM.weatherCondition.textContent = description;
@@ -109,4 +116,20 @@ DOM.searchForm.addEventListener('submit', (e) => {
     if (city) {
         fetchWeather(city);
     }
+});
+DOM.unitToggle.addEventListener('click', () => {
+    if (currentTempCelsius === null) return; // Ако още няма данни, не прави нищо
+
+    if (isCelsius) {
+        // Превръщаме в Fahrenheit
+        const fahrenheit = (currentTempCelsius * 9/5) + 32;
+        DOM.temperature.textContent = `${Math.round(fahrenheit)}°F`;
+        DOM.unitToggle.textContent = 'Към °C';
+    } else {
+        // Връщаме в Celsius
+        DOM.temperature.textContent = `${Math.round(currentTempCelsius)}°C`;
+        DOM.unitToggle.textContent = 'Към °F';
+    }
+    
+    isCelsius = !isCelsius; // Обръщаме състоянието (true -> false или false -> true)
 });
