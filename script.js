@@ -1,46 +1,83 @@
-// Селектиране на елементи
-const searchForm = document.getElementById('search-form');
-const cityInput = document.getElementById('city-input');
-const weatherResult = document.getElementById('weather-result');
-const loading = document.getElementById('loading');
-const errorMessage = document.getElementById('error-message');
+/**
+ * Обект, съдържащ референции към всички важни DOM елементи.
+ * (Задача 3.3 от заданието)
+ */
+const DOM = {
+    searchForm: document.getElementById('search-form'),
+    cityInput: document.getElementById('city-input'),
+    weatherResult: document.getElementById('weather-result'),
+    loading: document.getElementById('loading'),
+    errorMessage: document.getElementById('error-message'),
+    cityName: document.getElementById('city-name'),
+    temperature: document.getElementById('temperature'),
+    weatherCondition: document.getElementById('weather-condition'),
+    weatherIcon: document.getElementById('weather-icon'),
+    windSpeed: document.getElementById('wind-speed')
+};
 
-// Елементи за данни
-const cityName = document.getElementById('city-name');
-const temperature = document.getElementById('temperature');
-const weatherCondition = document.getElementById('weather-condition');
-const weatherIcon = document.getElementById('weather-icon');
-const windSpeed = document.getElementById('wind-speed');
+// Речник за кодовете на времето (за по-добра визуализация)
+const weatherDescriptions = {
+    0: "Ясно небе",
+    1: "Предимно ясно", 2: "Частична облачност", 3: "Облачно",
+    45: "Мъгла", 48: "Скреж",
+    51: "Слаб ръмеж", 53: "Умерен ръмеж", 55: "Силен ръмеж",
+    61: "Слаб дъжд", 63: "Умерен дъжд", 65: "Силен дъжд",
+    71: "Слаб снеговалеж", 73: "Умерен снеговалеж", 75: "Силен снеговалеж",
+    95: "Гръмотевична буря"
+};
 
-// Слушател за изпращане на формата
-searchForm.addEventListener('submit', (e) => {
-    e.preventDefault();
-    const city = cityInput.value.trim();
-    if (city) {
-        // Тук ще извикаме функцията за fetchWeather(city)
-        console.log("Търсене за:", city);
-    }
-});
-// Помощни функции за интерфейса
+/**
+ * Показва индикатора за зареждане.
+ */
 function showLoading() {
-    loading.style.display = 'block';
-    errorMessage.style.display = 'none';
-    weatherResult.style.display = 'none';
+    DOM.loading.style.display = 'block';
+    DOM.errorMessage.style.display = 'none';
+    DOM.weatherResult.style.display = 'none';
 }
 
+/**
+ * Скрива индикатора за зареждане.
+ */
 function hideLoading() {
-    loading.style.display = 'none';
+    DOM.loading.style.display = 'none';
 }
 
+/**
+ * Показва съобщение за грешка.
+ * (Задача 3.1 - Премахната е несъществуващата променлива humidity)
+ */
 function showError(message) {
-    errorMessage.textContent = message;
-    errorMessage.style.display = 'block';
-    weatherResult.style.display = 'none';
+    DOM.errorMessage.textContent = message;
+    DOM.errorMessage.style.display = 'block';
+    DOM.weatherResult.style.display = 'none';
 }
+
+/**
+ * Визуализира данните за времето в интерфейса.
+ */
+function displayWeather(data, name, country) {
+    DOM.cityName.textContent = `${name}, ${country}`;
+    DOM.temperature.textContent = `${Math.round(data.temperature)}°C`;
+    DOM.windSpeed.textContent = data.windspeed;
+
+    const description = weatherDescriptions[data.weathercode] || "Неизвестно";
+    DOM.weatherCondition.textContent = description;
+
+    // Тук може да добавите логика за иконки по-късно
+    DOM.weatherIcon.className = `fas fa-cloud fa-3x`; 
+
+    DOM.weatherResult.style.display = 'block';
+}
+
+/**
+ * Основна функция за извличане на данни от API.
+ * (Задача 4.2 - JSDoc коментар)
+ * @param {string} city - Името на града.
+ */
 async function fetchWeather(city) {
     showLoading();
     try {
-        // Стъпка 1: Геокодиране (Град -> Координати)
+        // 1. Геокодиране
         const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1&language=en&format=json`;
         const geoResponse = await fetch(geoUrl);
         const geoData = await geoResponse.json();
@@ -51,16 +88,11 @@ async function fetchWeather(city) {
 
         const { latitude, longitude, name, country } = geoData.results[0];
 
-        // Стъпка 2: Вземане на времето по координати
-        // Използваме current_weather=true за базови данни
+        // 2. Вземане на времето
         const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current_weather=true`;
         const weatherResponse = await fetch(weatherUrl);
         const weatherData = await weatherResponse.json();
 
-        // Показваме данните в конзолата за тест
-        console.log("Данни за времето:", weatherData);
-        
-        // Тук ще извикаме функцията за визуализация (displayWeather)
         displayWeather(weatherData.current_weather, name, country);
 
     } catch (error) {
@@ -69,10 +101,12 @@ async function fetchWeather(city) {
         hideLoading();
     }
 }
-searchForm.addEventListener('submit', (e) => {
+
+// Слушател за формата
+DOM.searchForm.addEventListener('submit', (e) => {
     e.preventDefault();
-    const city = cityInput.value.trim();
+    const city = DOM.cityInput.value.trim();
     if (city) {
-        fetchWeather(city); // Извикваме логиката за API
+        fetchWeather(city);
     }
 });
