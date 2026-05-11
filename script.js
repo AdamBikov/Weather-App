@@ -2,7 +2,6 @@ let currentTempCelsius = null;
 let isCelsius = true;
 /**
  * Обект, съдържащ референции към всички важни DOM елементи.
- * (Задача 3.3 от заданието)
  */
 const DOM = {
     searchForm: document.getElementById('search-form'),
@@ -17,6 +16,16 @@ const DOM = {
     windSpeed: document.getElementById('wind-speed'),
     unitToggle: document.getElementById('unit-toggle'),
     historyContainer: document.getElementById('search-history'),
+};
+
+const weatherIcons = {
+    0: "fa-sun",                          // Ясно небе
+    1: "fa-cloud-sun", 2: "fa-cloud-sun",  // Предимно ясно
+    3: "fa-cloud",                        // Облачно
+    45: "fa-smog", 48: "fa-smog",         // Мъгла
+    51: "fa-cloud-rain", 61: "fa-cloud-showers-heavy", // Дъжд
+    71: "fa-snowflake",                   // Сняг
+    95: "fa-bolt-lightning"               // Буря
 };
 
 // Речник за кодовете на времето (за по-добра визуализация)
@@ -48,7 +57,6 @@ function hideLoading() {
 
 /**
  * Показва съобщение за грешка.
- * (Задача 3.1 - Премахната е несъществуващата променлива humidity)
  */
 function showError(message) {
     DOM.errorMessage.textContent = message;
@@ -70,7 +78,6 @@ function displayWeather(data, name, country) {
     const description = weatherDescriptions[data.weathercode] || "Неизвестно";
     DOM.weatherCondition.textContent = description;
 
-    // Обновяваме иконата според кода (Задача 1.4 от PDF)
     const iconClass = weatherIcons[data.weathercode] || "fa-cloud";
     DOM.weatherIcon.className = `fas ${iconClass} fa-3x`; 
 
@@ -112,7 +119,6 @@ function renderHistory() {
 
 /**
  * Основна функция за извличане на данни от API.
- * (Задача 4.2 - JSDoc коментар)
  * @param {string} city - Името на града.
  */
 async function fetchWeather(city) {
