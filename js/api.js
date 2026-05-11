@@ -12,7 +12,9 @@ export async function getCoordinates(city) {
 }
 
 export async function getWeather(lat, lon) {
-    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true`;
+    // Добавяме параметър daily за температура и код на времето
+    const weatherUrl = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&daily=weathercode,temperature_2m_max&timezone=auto`;
     const response = await fetch(weatherUrl);
+    if (!response.ok) throw new Error('Грешка при извличане на времето');
     return await response.json();
 }

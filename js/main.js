@@ -46,6 +46,34 @@ function displayWeather(data, name, country) {
     DOM.weatherResult.style.display = 'block';
 }
 
+function displayForecast(dailyData) {
+    const container = document.getElementById('forecast-container');
+    container.innerHTML = ''; // Изчистваме старите данни
+    container.style.display = 'grid';
+
+    // Вземаме данните за следващите 5 дни (започваме от индекс 1, защото 0 е днес)
+    for (let i = 1; i <= 5; i++) {
+        const timestamp = dailyData.time[i];
+        const date = new Date(timestamp).toLocaleDateString('bg-BG', { weekday: 'short' });
+        const maxTemp = Math.round(dailyData.temperature_2m_max[i]);
+        const weatherCode = dailyData.weathercode[i];
+        
+        const dayElement = document.createElement('div');
+        dayElement.className = 'forecast-day';
+        
+        // Използваме твоя обект с икони от ui.js
+        const iconClass = weatherIcons[weatherCode] || 'fa-cloud';
+        
+        dayElement.innerHTML = `
+            <span class="forecast-date">${date}</span>
+            <i class="fas ${iconClass}"></i>
+            <span class="forecast-temp">${maxTemp}°</span>
+        `;
+        
+        container.appendChild(dayElement);
+    }
+}
+
 /**
  * Логика за fetch.
  */
@@ -59,6 +87,7 @@ async function fetchWeather(city) {
         const weatherData = await getWeather(geoData.latitude, geoData.longitude);
         
         displayWeather(weatherData.current_weather, geoData.name, geoData.country);
+        displayForecast(weatherData.daily);
         saveToHistory(geoData.name);
         renderHistory();
     } catch (error) {

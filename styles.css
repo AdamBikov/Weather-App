@@ -147,3 +147,35 @@ button:hover {
 .history-item:hover {
     background: rgba(74, 158, 255, 0.2);
 }
+
+.forecast-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr); /* 5 равни колони */
+    gap: 10px;
+    margin-top: 20px;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.forecast-day {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px 5px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.forecast-day i {
+    color: #4a9eff;
+    font-size: 1.2rem;
+}
+
+/* Адаптивност за мобилни устройства */
+@media (max-width: 400px) {
+    .forecast-grid {
+        grid-template-columns: repeat(3, 1fr); /* На малък екран минава на 3 колони */
+    }
+}
