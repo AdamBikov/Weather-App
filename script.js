@@ -16,6 +16,7 @@ const DOM = {
     windSpeed: document.getElementById('wind-speed'),
     unitToggle: document.getElementById('unit-toggle'),
     historyContainer: document.getElementById('search-history'),
+    lastUpdated: document.getElementById('last-updated'),
 };
 
 const weatherIcons = {
@@ -82,6 +83,15 @@ function displayWeather(data, name, country) {
     DOM.weatherIcon.className = `fas ${iconClass} fa-3x`; 
 
     DOM.weatherResult.style.display = 'block';
+
+    const now = new Date();
+    const formatter = new Intl.DateTimeFormat('bg-BG', {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+});
+
+DOM.lastUpdated.textContent = `Последно обновяване: ${formatter.format(now)} ч.`;
 }
 
 /**
