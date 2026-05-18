@@ -5,9 +5,6 @@ import { saveToHistory, getHistory } from './storage.js';
 let currentTempCelsius = null;
 let isCelsius = true;
 
-/**
- * Рендира историята на търсенията от LocalStorage.
- */
 function renderHistory() {
     const history = getHistory();
     DOM.historyContainer.innerHTML = '';
@@ -20,10 +17,6 @@ function renderHistory() {
     });
 }
 
-/**
- * Основна функция за визуализация на текущото време.
- * ЗАБЕЛЕЖКА: Вече приема и пети параметър "hourlyData" за вероятността за валежи.
- */
 function displayWeather(data, name, country, dailyData, hourlyData) {
     currentTempCelsius = data.temperature;
     isCelsius = true;
@@ -32,10 +25,9 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
     DOM.temperature.textContent = `${Math.round(currentTempCelsius)}°C`;
     DOM.windSpeed.textContent = data.windspeed;
 
-    // Намираме индекса на текущия час в почасовите данни (по подразбиране Open-Meteo връща текущия ден)
     const currentHourIndex = new Date().getHours();
 
-    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 1: Усеща се като (Реално време от hourly)
+    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 1: Усеща се като
     if (hourlyData && hourlyData.apparent_temperature) {
         const feelsLike = hourlyData.apparent_temperature[currentHourIndex];
         DOM.apparentTemp.textContent = `Усеща се като: ${Math.round(feelsLike)}°C`;
@@ -43,7 +35,7 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
         DOM.apparentTemp.textContent = `Усеща се като: --°C`;
     }
 
-    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 2: UV Индекс (Максимален за деня)
+    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 2: UV Индекс
     if (dailyData && dailyData.uv_index_max) {
         const uv = dailyData.uv_index_max[0];
         let risk = "Нисък";
@@ -54,7 +46,7 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
         DOM.uvIndex.textContent = `UV Индекс: --`;
     }
 
-    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 3: Вероятност за валежи (Вземаме текущия час)
+    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 3: Вероятност за валежи
     if (hourlyData && hourlyData.precipitation_probability) {
         const rainChance = hourlyData.precipitation_probability[currentHourIndex];
         DOM.rainChance.textContent = `Шанс за дъжд: ${rainChance}%`;
@@ -78,8 +70,38 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
 }
 
 /**
- * Визуализира 5-дневната прогноза в Grid структура.
+ * ДОПЪЛНИТЕЛНА ФУНКЦИЯ 4: Визуализира почасовата прогноза (следващите 10 часа)
  */
+function displayHourly(hourlyData) {
+    DOM.hourlyContainer.innerHTML = '';
+    DOM.hourlyContainer.style.display = 'flex';
+
+    const currentHour = new Date().getHours();
+
+    // Показваме следващите 10 часа от денонощието
+    for (let i = currentHour; i < currentHour + 10; i++) {
+        // Проверка в случай, че индексът премине 24 часа (отива в следващия ден)
+        if (i >= hourlyData.time.length) break;
+
+        const rawTime = new Date(hourlyData.time[i]);
+        const formattedHour = rawTime.toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' });
+        const temp = Math.round(hourlyData.apparent_temperature[i]);
+        const code = hourlyData.precipitation_probability[i]; // Може да ползваме кодове или просто текст
+        
+        // Малко подобрение: вместо кодове за икона, в часовете показваме малка капка, ако шансът за дъжд е > 30%
+        const iconClass = code > 30 ? 'fa-cloud-showers-heavy' : 'fa-clock';
+
+        const hourBox = document.createElement('div');
+        hourBox.className = 'hourly-item-box';
+        hourBox.innerHTML = `
+            <span>${formattedHour}</span>
+            <i class="fas ${iconClass}"></i>
+            <span>${temp}°</span>
+        `;
+        DOM.hourlyContainer.appendChild(hourBox);
+    }
+}
+
 function displayForecast(dailyData) {
     const container = document.getElementById('forecast-container');
     container.innerHTML = '';
@@ -106,9 +128,6 @@ function displayForecast(dailyData) {
     }
 }
 
-/**
- * Основна асинхронна функция за извличане на данните.
- */
 async function fetchWeather(city) {
     DOM.loading.style.display = 'block';
     DOM.errorMessage.style.display = 'none';
@@ -118,7 +137,6 @@ async function fetchWeather(city) {
         const geoData = await getCoordinates(city);
         const weatherData = await getWeather(geoData.latitude, geoData.longitude);
         
-        // КЛЮЧОВА ПРОМЯНА: Подаваме и weatherData.hourly като 5-ти параметър
         displayWeather(
             weatherData.current_weather, 
             geoData.name, 
@@ -126,6 +144,9 @@ async function fetchWeather(city) {
             weatherData.daily, 
             weatherData.hourly
         );
+        
+        // Извикваме новата почасова прогноза
+        displayHourly(weatherData.hourly);
         
         displayForecast(weatherData.daily);
         saveToHistory(geoData.name);
