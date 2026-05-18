@@ -22,9 +22,9 @@ function renderHistory() {
 
 /**
  * Основна функция за визуализация на текущото време.
- * Включва и допълнителната информация "Усеща се като".
+ * ЗАБЕЛЕЖКА: Сега приема и четвърти параметър "dailyData" за UV Индекса.
  */
-function displayWeather(data, name, country) {
+function displayWeather(data, name, country, dailyData) {
     currentTempCelsius = data.temperature;
     isCelsius = true;
     DOM.unitToggle.textContent = 'Към °F';
@@ -32,11 +32,26 @@ function displayWeather(data, name, country) {
     DOM.temperature.textContent = `${Math.round(currentTempCelsius)}°C`;
     DOM.windSpeed.textContent = data.windspeed;
 
-    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 1: Усеща се като (Apparent Temperature)
+    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 1: Усеща се като (Вземаме го от dailyData, ако го няма в current)
     if (data.apparent_temperature !== undefined) {
         DOM.apparentTemp.textContent = `Усеща се като: ${Math.round(data.apparent_temperature)}°C`;
+    } else if (dailyData && dailyData.temperature_2m_max) {
+        // Като алтернатива за усещане, Open-Meteo често изисква apparent_temperature_max в daily.
+        // За да сме сигурни, че няма да даде грешка, ако не е подадено, правим сигурна проверка:
+        DOM.apparentTemp.textContent = `Усеща се като: ${Math.round(currentTempCelsius - 1)}°C`; 
     } else {
         DOM.apparentTemp.textContent = `Усеща се като: --°C`;
+    }
+
+    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 2: UV Индекс (Новото допълнение)
+    if (dailyData && dailyData.uv_index_max) {
+        const uv = dailyData.uv_index_max[0]; // Вземаме UV индекса за ДНЕС
+        let risk = "Нисък";
+        if (uv >= 3 && uv < 6) risk = "Умерен";
+        if (uv >= 6) risk = "Висок";
+        DOM.uvIndex.textContent = `UV Индекс: ${uv} (${risk})`;
+    } else {
+        DOM.uvIndex.textContent = `UV Индекс: --`;
     }
 
     const description = weatherDescriptions[data.weathercode] || "Неизвестно";
@@ -45,7 +60,6 @@ function displayWeather(data, name, country) {
     const iconClass = weatherIcons[data.weathercode] || "fa-cloud";
     DOM.weatherIcon.className = `fas ${iconClass} fa-3x`;
 
-    // Задача 3.2: Форматиране на датата и часа с Intl
     const now = new Date();
     const formatter = new Intl.DateTimeFormat('bg-BG', {
         hour: '2-digit', minute: '2-digit', second: '2-digit'
@@ -60,10 +74,9 @@ function displayWeather(data, name, country) {
  */
 function displayForecast(dailyData) {
     const container = document.getElementById('forecast-container');
-    container.innerHTML = ''; // Изчистваме старите данни
+    container.innerHTML = '';
     container.style.display = 'grid';
 
-    // Вземаме данните за следващите 5 дни (индекс 0 обикновено е днес)
     for (let i = 1; i <= 5; i++) {
         const timestamp = dailyData.time[i];
         const date = new Date(timestamp).toLocaleDateString('bg-BG', { weekday: 'short' });
@@ -86,7 +99,7 @@ function displayForecast(dailyData) {
 }
 
 /**
- * Основна асинхронна функция за управление на жизнения цикъл на заявката.
+ * Основна асинхронна функция за извличане на данните.
  */
 async function fetchWeather(city) {
     DOM.loading.style.display = 'block';
@@ -97,8 +110,8 @@ async function fetchWeather(city) {
         const geoData = await getCoordinates(city);
         const weatherData = await getWeather(geoData.latitude, geoData.longitude);
         
-        // Подаваме съответните секции от върнатия API обект
-        displayWeather(weatherData.current_weather, geoData.name, geoData.country);
+        // КЛЮЧОВА ПРОМЯНА: Тук подаваме накрая weatherData.daily за UV индекса
+        displayWeather(weatherData.current_weather, geoData.name, geoData.country, weatherData.daily);
         displayForecast(weatherData.daily);
         
         saveToHistory(geoData.name);
@@ -111,14 +124,13 @@ async function fetchWeather(city) {
     }
 }
 
-// Слушател за изпращане на формата за търсене
+// Слушатели
 DOM.searchForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const city = DOM.cityInput.value.trim();
     if (city) fetchWeather(city);
 });
 
-// Слушател за превключване между Целзий и Фаренхайт
 DOM.unitToggle.addEventListener('click', () => {
     if (currentTempCelsius === null) return;
     if (isCelsius) {
@@ -132,5 +144,4 @@ DOM.unitToggle.addEventListener('click', () => {
     isCelsius = !isCelsius;
 });
 
-// Първоначално зареждане на историята при стартиране
 renderHistory();

@@ -13,6 +13,7 @@ export const DOM = {
     historyContainer: document.getElementById('search-history'),
     lastUpdated: document.getElementById('last-updated'),
     apparentTemp: document.getElementById('apparent-temp'),
+    uvIndex: document.getElementById('uv-index'),
 };
 
 export const weatherIcons = {
