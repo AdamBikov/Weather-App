@@ -6,7 +6,7 @@ let currentTempCelsius = null;
 let isCelsius = true;
 
 /**
- * Рендира историята на търсенията.
+ * Рендира историята на търсенията от LocalStorage.
  */
 function renderHistory() {
     const history = getHistory();
@@ -21,7 +21,8 @@ function renderHistory() {
 }
 
 /**
- * Основна функция за визуализация.
+ * Основна функция за визуализация на текущото време.
+ * Включва и допълнителната информация "Усеща се като".
  */
 function displayWeather(data, name, country) {
     currentTempCelsius = data.temperature;
@@ -31,12 +32,20 @@ function displayWeather(data, name, country) {
     DOM.temperature.textContent = `${Math.round(currentTempCelsius)}°C`;
     DOM.windSpeed.textContent = data.windspeed;
 
+    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 1: Усеща се като (Apparent Temperature)
+    if (data.apparent_temperature !== undefined) {
+        DOM.apparentTemp.textContent = `Усеща се като: ${Math.round(data.apparent_temperature)}°C`;
+    } else {
+        DOM.apparentTemp.textContent = `Усеща се като: --°C`;
+    }
+
     const description = weatherDescriptions[data.weathercode] || "Неизвестно";
     DOM.weatherCondition.textContent = description;
 
     const iconClass = weatherIcons[data.weathercode] || "fa-cloud";
     DOM.weatherIcon.className = `fas ${iconClass} fa-3x`;
 
+    // Задача 3.2: Форматиране на датата и часа с Intl
     const now = new Date();
     const formatter = new Intl.DateTimeFormat('bg-BG', {
         hour: '2-digit', minute: '2-digit', second: '2-digit'
@@ -46,12 +55,15 @@ function displayWeather(data, name, country) {
     DOM.weatherResult.style.display = 'block';
 }
 
+/**
+ * Визуализира 5-дневната прогноза в Grid структура.
+ */
 function displayForecast(dailyData) {
     const container = document.getElementById('forecast-container');
     container.innerHTML = ''; // Изчистваме старите данни
     container.style.display = 'grid';
 
-    // Вземаме данните за следващите 5 дни (започваме от индекс 1, защото 0 е днес)
+    // Вземаме данните за следващите 5 дни (индекс 0 обикновено е днес)
     for (let i = 1; i <= 5; i++) {
         const timestamp = dailyData.time[i];
         const date = new Date(timestamp).toLocaleDateString('bg-BG', { weekday: 'short' });
@@ -61,7 +73,6 @@ function displayForecast(dailyData) {
         const dayElement = document.createElement('div');
         dayElement.className = 'forecast-day';
         
-        // Използваме твоя обект с икони от ui.js
         const iconClass = weatherIcons[weatherCode] || 'fa-cloud';
         
         dayElement.innerHTML = `
@@ -75,7 +86,7 @@ function displayForecast(dailyData) {
 }
 
 /**
- * Логика за fetch.
+ * Основна асинхронна функция за управление на жизнения цикъл на заявката.
  */
 async function fetchWeather(city) {
     DOM.loading.style.display = 'block';
@@ -86,8 +97,10 @@ async function fetchWeather(city) {
         const geoData = await getCoordinates(city);
         const weatherData = await getWeather(geoData.latitude, geoData.longitude);
         
+        // Подаваме съответните секции от върнатия API обект
         displayWeather(weatherData.current_weather, geoData.name, geoData.country);
         displayForecast(weatherData.daily);
+        
         saveToHistory(geoData.name);
         renderHistory();
     } catch (error) {
@@ -98,13 +111,14 @@ async function fetchWeather(city) {
     }
 }
 
-// Слушатели
+// Слушател за изпращане на формата за търсене
 DOM.searchForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const city = DOM.cityInput.value.trim();
     if (city) fetchWeather(city);
 });
 
+// Слушател за превключване между Целзий и Фаренхайт
 DOM.unitToggle.addEventListener('click', () => {
     if (currentTempCelsius === null) return;
     if (isCelsius) {
@@ -118,5 +132,5 @@ DOM.unitToggle.addEventListener('click', () => {
     isCelsius = !isCelsius;
 });
 
-// Първоначално зареждане
+// Първоначално зареждане на историята при стартиране
 renderHistory();

@@ -11,7 +11,8 @@ export const DOM = {
     windSpeed: document.getElementById('wind-speed'),
     unitToggle: document.getElementById('unit-toggle'),
     historyContainer: document.getElementById('search-history'),
-    lastUpdated: document.getElementById('last-updated')
+    lastUpdated: document.getElementById('last-updated'),
+    apparentTemp: document.getElementById('apparent-temp'),
 };
 
 export const weatherIcons = {
