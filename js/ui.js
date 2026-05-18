@@ -16,6 +16,8 @@ export const DOM = {
     uvIndex: document.getElementById('uv-index'),
     rainChance: document.getElementById('rain-chance'),
     hourlyContainer: document.getElementById('hourly-container'),
+    sunriseTime: document.getElementById('sunrise-time'),
+    sunsetTime: document.getElementById('sunset-time'),
 };
 
 export const weatherIcons = {

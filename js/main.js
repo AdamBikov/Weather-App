@@ -54,6 +54,19 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
         DOM.rainChance.textContent = `Шанс за дъжд: --%`;
     }
 
+    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 5: Изгрев и Залез
+    if (dailyData && dailyData.sunrise && dailyData.sunset) {
+        // Изрязваме само часа и минутите от стринга (напр. "2026-05-18T05:40" става "05:40")
+        const sunriseHTML = dailyData.sunrise[0].split('T')[1];
+        const sunsetHTML = dailyData.sunset[0].split('T')[1];
+        
+        DOM.sunriseTime.innerHTML = `<i class="fas fa-sun"></i> Изгрев: ${sunriseHTML}`;
+        DOM.sunsetTime.innerHTML = `<i class="fas fa-moon"></i> Залез: ${sunsetHTML}`;
+    } else {
+        DOM.sunriseTime.textContent = `Изгрев: --:--`;
+        DOM.sunsetTime.textContent = `Залез: --:--`;
+    }
+
     const description = weatherDescriptions[data.weathercode] || "Неизвестно";
     DOM.weatherCondition.textContent = description;
 
@@ -69,26 +82,20 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
     DOM.weatherResult.style.display = 'block';
 }
 
-/**
- * ДОПЪЛНИТЕЛНА ФУНКЦИЯ 4: Визуализира почасовата прогноза (следващите 10 часа)
- */
 function displayHourly(hourlyData) {
     DOM.hourlyContainer.innerHTML = '';
     DOM.hourlyContainer.style.display = 'flex';
 
     const currentHour = new Date().getHours();
 
-    // Показваме следващите 10 часа от денонощието
     for (let i = currentHour; i < currentHour + 10; i++) {
-        // Проверка в случай, че индексът премине 24 часа (отива в следващия ден)
         if (i >= hourlyData.time.length) break;
 
         const rawTime = new Date(hourlyData.time[i]);
         const formattedHour = rawTime.toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' });
         const temp = Math.round(hourlyData.apparent_temperature[i]);
-        const code = hourlyData.precipitation_probability[i]; // Може да ползваме кодове или просто текст
+        const code = hourlyData.precipitation_probability[i];
         
-        // Малко подобрение: вместо кодове за икона, в часовете показваме малка капка, ако шансът за дъжд е > 30%
         const iconClass = code > 30 ? 'fa-cloud-showers-heavy' : 'fa-clock';
 
         const hourBox = document.createElement('div');
@@ -145,9 +152,7 @@ async function fetchWeather(city) {
             weatherData.hourly
         );
         
-        // Извикваме новата почасова прогноза
         displayHourly(weatherData.hourly);
-        
         displayForecast(weatherData.daily);
         saveToHistory(geoData.name);
         renderHistory();
