@@ -9,53 +9,63 @@
 </head>
 <body>
     <div class="container">
-        <h1>Прогноза за времето</h1>
+    <h1>Прогноза за времето</h1>
+    
+    <form id="search-form" class="search-box">
+        <input type="text" id="city-input" placeholder="Въведете град на английски..." required>
+        <button type="submit">Търси</button>
+    </form>
+    
+    <div id="search-history" class="history-container"></div>
+    
+    <div id="loading" style="display: none;">Зареждане...</div>
+    <div id="error-message" style="display: none;"></div>
+    
+    <div id="weather-result" class="weather-card" style="display: none;">
+        <h2 id="city-name"></h2>
         
-        <form id="search-form">
-            <input type="text" id="city-input" placeholder="Въведете град на английски..." required>
-            <button type="submit">Търси</button>
-        </form>
-        <div id="search-history" class="history-container"></div>
-
-        <div id="loading" style="display: none;">Зареждане...</div>
-        <div id="error-message" style="display: none;"></div>
-
-        <div id="weather-result" class="weather-card" style="display: none;">
-            <h2 id="city-name">--</h2>
-            <div class="main-info">
-    <i id="weather-icon" class="fas fa-cloud fa-3x"></i>
-    <span id="temperature">15°C</span>
-</div>
-
-<div id="weather-condition">Облачно</div>
-
-<div class="extra-metrics" style="margin: 15px 0; display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
-    <p id="apparent-temp" style="font-size: 1rem; color: #a4b3cc; margin: 0;"></p>
-    <p id="uv-index" style="font-size: 1rem; color: #a4b3cc; margin: 0;"></p>
-    <p id="rain-chance" style="font-size: 1rem; color: #a4b3cc; margin: 0;"></p>
-</div>
-
-<div class="sun-metrics" style="margin: 10px 0; display: flex; justify-content: center; gap: 30px;">
-    <p id="sunrise-time" style="font-size: 0.9.5rem; color: #ffd700; margin: 0;">
-        <i class="fas fa-heading fa-sun"></i> Изгрев: --:--
-    </p>
-    <p id="sunset-time" style="font-size: 0.9.5rem; color: #ff7e5f; margin: 0;">
-        <i class="fas fa-moon"></i> Залез: --:--
-    </p>
-</div>
-
-<div id="hourly-container" class="hourly-scroll" style="display: none;"></div>
-
-<p id="last-updated" style="font-size: 0.8rem; color: #7a8499; margin-top: 5px;"></p>
-            <div class="details">
-                <span>Вятър: <strong id="wind-speed">--</strong> км/ч</span>
-            </div>
-            <div id="forecast-container" class="forecast-grid" style="display: none;">
-            </div>
+        <div class="main-info">
+            <i id="weather-icon" class="fas fa-cloud fa-3x"></i>
+            <span id="temperature"></span>
         </div>
-        <button id="unit-toggle" class="unit-btn">Към °F</button>
-    </div>
+        
+        <div id="weather-condition"></div>
+        <p id="last-updated" style="font-size: 0.8rem; color: #7a8499; margin-top: 5px;"></p>
 
+        <div id="hourly-container" class="hourly-scroll"></div>
+
+        <div class="metrics-grid">
+            <div class="metric-widget">
+                <i class="fas fa-thermometer-half"></i>
+                <span>Усеща се</span>
+                <strong id="apparent-temp">--°C</strong>
+            </div>
+            <div class="metric-widget">
+                <i class="fas fa-sun"></i>
+                <span>UV Индекс</span>
+                <strong id="uv-index">--</strong>
+            </div>
+            <div class="metric-widget">
+                <i class="fas fa-tint"></i>
+                <span>Шанс за дъжд</span>
+                <strong id="rain-chance">--%</strong>
+            </div>
+            <div class="metric-widget">
+                <i class="fas fa-wind"></i>
+                <span>Вятър</span>
+                <strong id="wind-speed">--</strong> </div>
+        </div>
+
+        <div class="sun-metrics">
+            <p id="sunrise-time"><i class="fas fa-sun"></i> Изгрев: --:--</p>
+            <p id="sunset-time"><i class="fas fa-moon"></i> Залез: --:--</p>
+        </div>
+
+        <div id="forecast-container" class="forecast-grid"></div>
+        
+        <button id="unit-toggle">Към °F</button>
+    </div>
+</div>
     <script type="module" src="js/main.js"></script>
 </body>
 </html>

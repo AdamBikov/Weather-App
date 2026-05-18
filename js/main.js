@@ -23,48 +23,48 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
     DOM.unitToggle.textContent = 'Към °F';
     DOM.cityName.textContent = `${name}, ${country}`;
     DOM.temperature.textContent = `${Math.round(currentTempCelsius)}°C`;
-    DOM.windSpeed.textContent = data.windspeed;
+    
+    // Вкарваме вятъра директно в новия му уиджет с мерна единица
+    DOM.windSpeed.textContent = `${data.windspeed} км/ч`;
 
     const currentHourIndex = new Date().getHours();
 
-    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 1: Усеща се като
+    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 1: Усеща се като (от hourly)
     if (hourlyData && hourlyData.apparent_temperature) {
         const feelsLike = hourlyData.apparent_temperature[currentHourIndex];
-        DOM.apparentTemp.textContent = `Усеща се като: ${Math.round(feelsLike)}°C`;
+        DOM.apparentTemp.textContent = `${Math.round(feelsLike)}°C`;
     } else {
-        DOM.apparentTemp.textContent = `Усеща се като: --°C`;
+        DOM.apparentTemp.textContent = `--°C`;
     }
 
-    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 2: UV Индекс
+    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 2: UV Индекс (от daily)
     if (dailyData && dailyData.uv_index_max) {
         const uv = dailyData.uv_index_max[0];
         let risk = "Нисък";
         if (uv >= 3 && uv < 6) risk = "Умерен";
         if (uv >= 6) risk = "Висок";
-        DOM.uvIndex.textContent = `UV Индекс: ${uv} (${risk})`;
+        DOM.uvIndex.textContent = `${uv} (${risk})`;
     } else {
-        DOM.uvIndex.textContent = `UV Индекс: --`;
+        DOM.uvIndex.textContent = `--`;
     }
 
-    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 3: Вероятност за валежи
+    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 3: Вероятност за валежи (от hourly)
     if (hourlyData && hourlyData.precipitation_probability) {
         const rainChance = hourlyData.precipitation_probability[currentHourIndex];
-        DOM.rainChance.textContent = `Шанс за дъжд: ${rainChance}%`;
+        DOM.rainChance.textContent = `${rainChance}%`;
     } else {
-        DOM.rainChance.textContent = `Шанс за дъжд: --%`;
+        DOM.rainChance.textContent = `--%`;
     }
 
-    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 5: Изгрев и Залез
+    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 5: Изгрев и Залез (от daily)
     if (dailyData && dailyData.sunrise && dailyData.sunset) {
-        // Изрязваме само часа и минутите от стринга (напр. "2026-05-18T05:40" става "05:40")
         const sunriseHTML = dailyData.sunrise[0].split('T')[1];
         const sunsetHTML = dailyData.sunset[0].split('T')[1];
-        
         DOM.sunriseTime.innerHTML = `<i class="fas fa-sun"></i> Изгрев: ${sunriseHTML}`;
         DOM.sunsetTime.innerHTML = `<i class="fas fa-moon"></i> Залез: ${sunsetHTML}`;
     } else {
-        DOM.sunriseTime.textContent = `Изгрев: --:--`;
-        DOM.sunsetTime.textContent = `Залез: --:--`;
+        DOM.sunriseTime.innerHTML = `<i class="fas fa-sun"></i> Изгрев: --:--`;
+        DOM.sunsetTime.innerHTML = `<i class="fas fa-moon"></i> Залез: --:--`;
     }
 
     const description = weatherDescriptions[data.weathercode] || "Неизвестно";
