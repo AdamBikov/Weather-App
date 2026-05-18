@@ -14,6 +14,7 @@ export const DOM = {
     lastUpdated: document.getElementById('last-updated'),
     apparentTemp: document.getElementById('apparent-temp'),
     uvIndex: document.getElementById('uv-index'),
+    rainChance: document.getElementById('rain-chance'),
 };
 
 export const weatherIcons = {

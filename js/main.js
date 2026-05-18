@@ -22,9 +22,9 @@ function renderHistory() {
 
 /**
  * Основна функция за визуализация на текущото време.
- * ЗАБЕЛЕЖКА: Сега приема и четвърти параметър "dailyData" за UV Индекса.
+ * ЗАБЕЛЕЖКА: Вече приема и пети параметър "hourlyData" за вероятността за валежи.
  */
-function displayWeather(data, name, country, dailyData) {
+function displayWeather(data, name, country, dailyData, hourlyData) {
     currentTempCelsius = data.temperature;
     isCelsius = true;
     DOM.unitToggle.textContent = 'Към °F';
@@ -32,26 +32,34 @@ function displayWeather(data, name, country, dailyData) {
     DOM.temperature.textContent = `${Math.round(currentTempCelsius)}°C`;
     DOM.windSpeed.textContent = data.windspeed;
 
-    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 1: Усеща се като (Вземаме го от dailyData, ако го няма в current)
-    if (data.apparent_temperature !== undefined) {
-        DOM.apparentTemp.textContent = `Усеща се като: ${Math.round(data.apparent_temperature)}°C`;
-    } else if (dailyData && dailyData.temperature_2m_max) {
-        // Като алтернатива за усещане, Open-Meteo често изисква apparent_temperature_max в daily.
-        // За да сме сигурни, че няма да даде грешка, ако не е подадено, правим сигурна проверка:
-        DOM.apparentTemp.textContent = `Усеща се като: ${Math.round(currentTempCelsius - 1)}°C`; 
+    // Намираме индекса на текущия час в почасовите данни (по подразбиране Open-Meteo връща текущия ден)
+    const currentHourIndex = new Date().getHours();
+
+    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 1: Усеща се като (Реално време от hourly)
+    if (hourlyData && hourlyData.apparent_temperature) {
+        const feelsLike = hourlyData.apparent_temperature[currentHourIndex];
+        DOM.apparentTemp.textContent = `Усеща се като: ${Math.round(feelsLike)}°C`;
     } else {
         DOM.apparentTemp.textContent = `Усеща се като: --°C`;
     }
 
-    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 2: UV Индекс (Новото допълнение)
+    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 2: UV Индекс (Максимален за деня)
     if (dailyData && dailyData.uv_index_max) {
-        const uv = dailyData.uv_index_max[0]; // Вземаме UV индекса за ДНЕС
+        const uv = dailyData.uv_index_max[0];
         let risk = "Нисък";
         if (uv >= 3 && uv < 6) risk = "Умерен";
         if (uv >= 6) risk = "Висок";
         DOM.uvIndex.textContent = `UV Индекс: ${uv} (${risk})`;
     } else {
         DOM.uvIndex.textContent = `UV Индекс: --`;
+    }
+
+    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 3: Вероятност за валежи (Вземаме текущия час)
+    if (hourlyData && hourlyData.precipitation_probability) {
+        const rainChance = hourlyData.precipitation_probability[currentHourIndex];
+        DOM.rainChance.textContent = `Шанс за дъжд: ${rainChance}%`;
+    } else {
+        DOM.rainChance.textContent = `Шанс за дъжд: --%`;
     }
 
     const description = weatherDescriptions[data.weathercode] || "Неизвестно";
@@ -110,10 +118,16 @@ async function fetchWeather(city) {
         const geoData = await getCoordinates(city);
         const weatherData = await getWeather(geoData.latitude, geoData.longitude);
         
-        // КЛЮЧОВА ПРОМЯНА: Тук подаваме накрая weatherData.daily за UV индекса
-        displayWeather(weatherData.current_weather, geoData.name, geoData.country, weatherData.daily);
-        displayForecast(weatherData.daily);
+        // КЛЮЧОВА ПРОМЯНА: Подаваме и weatherData.hourly като 5-ти параметър
+        displayWeather(
+            weatherData.current_weather, 
+            geoData.name, 
+            geoData.country, 
+            weatherData.daily, 
+            weatherData.hourly
+        );
         
+        displayForecast(weatherData.daily);
         saveToHistory(geoData.name);
         renderHistory();
     } catch (error) {
