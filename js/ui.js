@@ -18,6 +18,7 @@ export const DOM = {
     hourlyContainer: document.getElementById('hourly-container'),
     sunriseTime: document.getElementById('sunrise-time'),
     sunsetTime: document.getElementById('sunset-time'),
+    locationBtn: document.getElementById('location-btn'),
 };
 
 export const weatherIcons = {
@@ -28,5 +29,5 @@ export const weatherIcons = {
 
 export const weatherDescriptions = {
     0: "Ясно небе", 1: "Предимно ясно", 2: "Частична облачност", 3: "Облачно",
-    45: "Мъгла", 61: "Слаб дъжд", 95: "Гръмотевична буря" // Можеш да си добавиш останалите
+    45: "Мъгла", 61: "Слаб дъжд", 95: "Гръмотевична буря"
 };

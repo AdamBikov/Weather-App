@@ -12,8 +12,11 @@
     <h1>Прогноза за времето</h1>
     
     <form id="search-form" class="search-box">
-        <input type="text" id="city-input" placeholder="Въведете град на английски..." required>
-        <button type="submit">Търси</button>
+    <div class="input-wrapper" style="position: relative; flex: 1; display: flex; align-items: center;">
+        <input type="text" id="city-input" placeholder="Въведете град на английски..." required style="width: 100%; padding-right: 45px;">
+        <i id="location-btn" class="fas fa-crosshairs" style="position: absolute; right: 15px; color: #38bdf8; cursor: pointer; font-size: 1.2rem; transition: transform 0.2s;"></i>
+    </div>
+    <button type="submit">Търси</button>
     </form>
     
     <div id="search-history" class="history-container"></div>

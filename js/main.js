@@ -24,12 +24,10 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
     DOM.cityName.textContent = `${name}, ${country}`;
     DOM.temperature.textContent = `${Math.round(currentTempCelsius)}°C`;
     
-    // Вкарваме вятъра директно в новия му уиджет с мерна единица
     DOM.windSpeed.textContent = `${data.windspeed} км/ч`;
 
     const currentHourIndex = new Date().getHours();
 
-    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 1: Усеща се като (от hourly)
     if (hourlyData && hourlyData.apparent_temperature) {
         const feelsLike = hourlyData.apparent_temperature[currentHourIndex];
         DOM.apparentTemp.textContent = `${Math.round(feelsLike)}°C`;
@@ -37,7 +35,6 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
         DOM.apparentTemp.textContent = `--°C`;
     }
 
-    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 2: UV Индекс (от daily)
     if (dailyData && dailyData.uv_index_max) {
         const uv = dailyData.uv_index_max[0];
         let risk = "Нисък";
@@ -48,7 +45,6 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
         DOM.uvIndex.textContent = `--`;
     }
 
-    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 3: Вероятност за валежи (от hourly)
     if (hourlyData && hourlyData.precipitation_probability) {
         const rainChance = hourlyData.precipitation_probability[currentHourIndex];
         DOM.rainChance.textContent = `${rainChance}%`;
@@ -56,7 +52,6 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
         DOM.rainChance.textContent = `--%`;
     }
 
-    // ДОПЪЛНИТЕЛНА ФУНКЦИЯ 5: Изгрев и Залез (от daily)
     if (dailyData && dailyData.sunrise && dailyData.sunset) {
         const sunriseHTML = dailyData.sunrise[0].split('T')[1];
         const sunsetHTML = dailyData.sunset[0].split('T')[1];
@@ -185,3 +180,61 @@ DOM.unitToggle.addEventListener('click', () => {
 });
 
 renderHistory();
+
+// ДОПЪЛНИТЕЛНА ФУНКЦИЯ: Геолокация
+DOM.locationBtn.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+        alert('Геолокацията не се поддържа от вашия браузър.');
+        return;
+    }
+
+    DOM.loading.style.display = 'block';
+    DOM.errorMessage.style.display = 'none';
+    DOM.weatherResult.style.display = 'none';
+
+    navigator.geolocation.getCurrentPosition(async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+
+        try {
+            // Използваме безплатното API на Open-Meteo за Reverse Geocoding, за да разберем името на града по координати
+            const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=`; 
+            // Алтернативно и по-точно за обратна локация е BigDataCloud или OpenStreetMap (Nominatim):
+            const reverseGeoUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=bg`;
+            
+            const geoResponse = await fetch(reverseGeoUrl);
+            const geoData = await geoResponse.json();
+            
+            // Взимаме името на града и държавата от отговора
+            const cityName = geoData.address.city || geoData.address.town || geoData.address.village || "Текуща локация";
+            const countryName = geoData.address.country || "";
+
+            // Взимаме времето за тези координати
+            const { getWeather } = await import('./api.js'); // Динамичен импорт, ако е необходимо, или директно викаме функцията
+            const weatherData = await getWeather(lat, lon);
+
+            // Показваме данните на екрана
+            displayWeather(
+                weatherData.current_weather, 
+                cityName, 
+                countryName, 
+                weatherData.daily, 
+                weatherData.hourly
+            );
+            
+            displayHourly(weatherData.hourly);
+            displayForecast(weatherData.daily);
+            
+        } catch (error) {
+            DOM.errorMessage.textContent = "Неуспешно извличане на локацията: " + error.message;
+            DOM.errorMessage.style.display = 'block';
+        } finally {
+            DOM.loading.style.display = 'none';
+        }
+
+    }, (error) => {
+        DOM.loading.style.display = 'none';
+        DOM.errorMessage.textContent = "Достъпът до локация бе отказан.";
+        DOM.errorMessage.style.display = 'block';
+    });
+});

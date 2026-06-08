@@ -343,3 +343,8 @@ button:hover {
     font-size: 0.9rem;
     margin: 15px 0;
 }
+/* Ефект за бутона за геолокация */
+#location-btn:hover {
+    transform: scale(1.2);
+    color: #2563eb !important;
+}
