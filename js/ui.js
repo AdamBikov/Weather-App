@@ -69,3 +69,66 @@ export const weatherDescriptions = {
     82: 'Силни превалявания',
     95: 'Гръмотевична буря'
 };
+
+export const translations = {
+    bg: {
+        title: "Прогноза за времето",
+        placeholder: "Въведете град на английски...",
+        search: "Търси",
+        feelsLike: "Усеща се като",
+        uvIndex: "UV Индекс",
+        rainChance: "Шанс за дъжд",
+        wind: "Вятър",
+        sunrise: "Изгрев",
+        sunset: "Залез",
+        toggle: "Към °F",
+        loading: "Зареждане...",
+        riskLow: "Нисък", riskMed: "Умерен", riskHigh: "Висок",
+        updated: "Последно обновяване"
+    },
+    en: {
+        title: "Weather Forecast",
+        placeholder: "Enter city in English...",
+        search: "Search",
+        feelsLike: "Feels like",
+        uvIndex: "UV Index",
+        rainChance: "Rain chance",
+        wind: "Wind",
+        sunrise: "Sunrise",
+        sunset: "Sunset",
+        toggle: "To °F",
+        loading: "Loading...",
+        riskLow: "Low", riskMed: "Moderate", riskHigh: "High",
+        updated: "Last updated"
+    },
+    de: {
+        title: "Wettervorhersage",
+        placeholder: "Stadt auf Englisch eingeben...",
+        search: "Suchen",
+        feelsLike: "Gefühlt wie",
+        uvIndex: "UV-Index",
+        rainChance: "Regenwahrscheinlichkeit",
+        wind: "Wind",
+        sunrise: "Sonnenaufgang",
+        sunset: "Sonnenuntergang",
+        toggle: "Zu °F",
+        loading: "Laden...",
+        riskLow: "Niedrig", riskMed: "Mäßig", riskHigh: "Hoch",
+        updated: "Zuletzt aktualisiert"
+    },
+    sk: {
+        title: "Predpoveď počasia",
+        placeholder: "Zadajte mesto v angličtine...",
+        search: "Hľadať",
+        feelsLike: "Pocitová teplota",
+        uvIndex: "UV Index",
+        rainChance: "Šanca na dážď",
+        wind: "Vietor",
+        sunrise: "Východ slnka",
+        sunset: "Západ slnka",
+        toggle: "Na °F",
+        loading: "Načitavam...",
+        riskLow: "Nízky", riskMed: "Mierny", riskHigh: "Vysoký",
+        updated: "Posledná aktualizácia"
+    }
+};
