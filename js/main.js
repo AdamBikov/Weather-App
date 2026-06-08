@@ -4,6 +4,8 @@ import { saveToHistory, getHistory } from './storage.js';
 
 let currentTempCelsius = null;
 let isCelsius = true;
+let map;
+let marker;
 
 function renderHistory() {
     const history = getHistory();
@@ -23,7 +25,6 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
     DOM.unitToggle.textContent = 'Към °F';
     DOM.cityName.textContent = `${name}, ${country}`;
     DOM.temperature.textContent = `${Math.round(currentTempCelsius)}°C`;
-    
     DOM.windSpeed.textContent = `${data.windspeed} км/ч`;
 
     const currentHourIndex = new Date().getHours();
@@ -80,17 +81,14 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
 function displayHourly(hourlyData) {
     DOM.hourlyContainer.innerHTML = '';
     DOM.hourlyContainer.style.display = 'flex';
-
     const currentHour = new Date().getHours();
 
     for (let i = currentHour; i < currentHour + 10; i++) {
         if (i >= hourlyData.time.length) break;
-
         const rawTime = new Date(hourlyData.time[i]);
         const formattedHour = rawTime.toLocaleTimeString('bg-BG', { hour: '2-digit', minute: '2-digit' });
         const temp = Math.round(hourlyData.apparent_temperature[i]);
         const code = hourlyData.precipitation_probability[i];
-        
         const iconClass = code > 30 ? 'fa-cloud-showers-heavy' : 'fa-clock';
 
         const hourBox = document.createElement('div');
@@ -114,10 +112,8 @@ function displayForecast(dailyData) {
         const date = new Date(timestamp).toLocaleDateString('bg-BG', { weekday: 'short' });
         const maxTemp = Math.round(dailyData.temperature_2m_max[i]);
         const weatherCode = dailyData.weathercode[i];
-        
         const dayElement = document.createElement('div');
         dayElement.className = 'forecast-day';
-        
         const iconClass = weatherIcons[weatherCode] || 'fa-cloud';
         
         dayElement.innerHTML = `
@@ -125,7 +121,6 @@ function displayForecast(dailyData) {
             <i class="fas ${iconClass}"></i>
             <span class="forecast-temp">${maxTemp}°</span>
         `;
-        
         container.appendChild(dayElement);
     }
 }
@@ -151,6 +146,11 @@ async function fetchWeather(city) {
         displayForecast(weatherData.daily);
         saveToHistory(geoData.name);
         renderHistory();
+
+        if (map && marker) {
+            map.flyTo([geoData.latitude, geoData.longitude], 8);
+            marker.setLatLng([geoData.latitude, geoData.longitude]);
+        }
     } catch (error) {
         DOM.errorMessage.textContent = error.message;
         DOM.errorMessage.style.display = 'block';
@@ -159,11 +159,113 @@ async function fetchWeather(city) {
     }
 }
 
-// Слушатели
+function initMap() {
+    const defaultLat = 42.6977;
+    const defaultLon = 23.3219;
+    map = L.map('map').setView([defaultLat, defaultLon], 6);
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO'
+    }).addTo(map);
+
+    marker = L.marker([defaultLat, defaultLon]).addTo(map);
+
+    map.on('click', async function(e) {
+        const lat = e.latlng.lat;
+        const lon = e.latlng.lng;
+        marker.setLatLng([lat, lon]);
+
+        DOM.loading.style.display = 'block';
+        DOM.errorMessage.style.display = 'none';
+        DOM.weatherResult.style.display = 'none';
+
+        try {
+            const reverseGeoUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=bg`;
+            const geoResponse = await fetch(reverseGeoUrl);
+            const geoData = await geoResponse.json();
+            
+            const address = geoData.address || {};
+            const cityName = address.city || address.town || address.village || address.municipality || "Избрана локация";
+            const countryName = address.country || "";
+
+            const weatherData = await getWeather(lat, lon);
+
+            displayWeather(
+                weatherData.current_weather, 
+                cityName, 
+                countryName, 
+                weatherData.daily, 
+                weatherData.hourly
+            );
+            
+            displayHourly(weatherData.hourly);
+            displayForecast(weatherData.daily);
+        } catch (error) {
+            DOM.errorMessage.textContent = "Грешка при зареждане от картата: " + error.message;
+            DOM.errorMessage.style.display = 'block';
+        } finally {
+            DOM.loading.style.display = 'none';
+        }
+    });
+}
+
+// --- Слушатели ---
 DOM.searchForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const city = DOM.cityInput.value.trim();
     if (city) fetchWeather(city);
+});
+
+DOM.locationBtn.addEventListener('click', () => {
+    if (!navigator.geolocation) {
+        alert('Геолокацията не се поддържа от вашия браузър.');
+        return;
+    }
+    DOM.loading.style.display = 'block';
+    DOM.errorMessage.style.display = 'none';
+    DOM.weatherResult.style.display = 'none';
+
+    navigator.geolocation.getCurrentPosition(async (position) => {
+        const lat = position.coords.latitude;
+        const lon = position.coords.longitude;
+
+        if (map && marker) {
+            map.flyTo([lat, lon], 10);
+            marker.setLatLng([lat, lon]);
+        }
+
+        try {
+            const reverseGeoUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=bg`;
+            const geoResponse = await fetch(reverseGeoUrl);
+            const geoData = await geoResponse.json();
+            
+            const address = geoData.address || {};
+            const cityName = address.city || address.town || address.village || "Текуща локация";
+            const countryName = address.country || "";
+
+            const weatherData = await getWeather(lat, lon);
+
+            displayWeather(
+                weatherData.current_weather, 
+                cityName, 
+                countryName, 
+                weatherData.daily, 
+                weatherData.hourly
+            );
+            
+            displayHourly(weatherData.hourly);
+            displayForecast(weatherData.daily);
+        } catch (error) {
+            DOM.errorMessage.textContent = "Неуспешна геолокация: " + error.message;
+            DOM.errorMessage.style.display = 'block';
+        } finally {
+            DOM.loading.style.display = 'none';
+        }
+    }, (error) => {
+        DOM.loading.style.display = 'none';
+        DOM.errorMessage.textContent = "Достъпът до локация бе отказан.";
+        DOM.errorMessage.style.display = 'block';
+    });
 });
 
 DOM.unitToggle.addEventListener('click', () => {
@@ -179,62 +281,8 @@ DOM.unitToggle.addEventListener('click', () => {
     isCelsius = !isCelsius;
 });
 
-renderHistory();
-
-// ДОПЪЛНИТЕЛНА ФУНКЦИЯ: Геолокация
-DOM.locationBtn.addEventListener('click', () => {
-    if (!navigator.geolocation) {
-        alert('Геолокацията не се поддържа от вашия браузър.');
-        return;
-    }
-
-    DOM.loading.style.display = 'block';
-    DOM.errorMessage.style.display = 'none';
-    DOM.weatherResult.style.display = 'none';
-
-    navigator.geolocation.getCurrentPosition(async (position) => {
-        const lat = position.coords.latitude;
-        const lon = position.coords.longitude;
-
-        try {
-            // Използваме безплатното API на Open-Meteo за Reverse Geocoding, за да разберем името на града по координати
-            const geoUrl = `https://geocoding-api.open-meteo.com/v1/search?name=`; 
-            // Алтернативно и по-точно за обратна локация е BigDataCloud или OpenStreetMap (Nominatim):
-            const reverseGeoUrl = `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&accept-language=bg`;
-            
-            const geoResponse = await fetch(reverseGeoUrl);
-            const geoData = await geoResponse.json();
-            
-            // Взимаме името на града и държавата от отговора
-            const cityName = geoData.address.city || geoData.address.town || geoData.address.village || "Текуща локация";
-            const countryName = geoData.address.country || "";
-
-            // Взимаме времето за тези координати
-            const { getWeather } = await import('./api.js'); // Динамичен импорт, ако е необходимо, или директно викаме функцията
-            const weatherData = await getWeather(lat, lon);
-
-            // Показваме данните на екрана
-            displayWeather(
-                weatherData.current_weather, 
-                cityName, 
-                countryName, 
-                weatherData.daily, 
-                weatherData.hourly
-            );
-            
-            displayHourly(weatherData.hourly);
-            displayForecast(weatherData.daily);
-            
-        } catch (error) {
-            DOM.errorMessage.textContent = "Неуспешно извличане на локацията: " + error.message;
-            DOM.errorMessage.style.display = 'block';
-        } finally {
-            DOM.loading.style.display = 'none';
-        }
-
-    }, (error) => {
-        DOM.loading.style.display = 'none';
-        DOM.errorMessage.textContent = "Достъпът до локация бе отказан.";
-        DOM.errorMessage.style.display = 'block';
-    });
+// Изчакваме целия DOM модел да се зареди, преди да стартираме историята и картата
+document.addEventListener('DOMContentLoaded', () => {
+    renderHistory();
+    initMap();
 });

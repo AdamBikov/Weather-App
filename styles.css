@@ -348,3 +348,104 @@ button:hover {
     transform: scale(1.2);
     color: #2563eb !important;
 }
+/* --- РЕСПОНСИВ ДИЗАЙН (МЕДИЙНИ ЗАЯВКИ) --- */
+
+/* За мобилни телефони (екран под 480px) */
+@media (max-width: 480px) {
+    body {
+        padding: 10px;
+    }
+
+    .container {
+        padding: 20px 15px;
+        border-radius: 20px;
+    }
+
+    h1 {
+        font-size: 1.5rem;
+    }
+
+    .search-box {
+        gap: 6px;
+    }
+
+    input {
+        padding: 12px 15px;
+        font-size: 0.85rem;
+    }
+
+    button[type="submit"] {
+        padding: 12px 18px;
+        font-size: 0.85rem;
+    }
+
+    #temperature {
+        font-size: 3rem;
+    }
+
+    #weather-icon {
+        font-size: 3rem;
+    }
+
+    /* Променяме 2x2 решетката в 1 колона на много малки екрани, ако се застъпват */
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+
+    .metric-widget {
+        padding: 10px;
+    }
+
+    .metric-widget strong {
+        font-size: 0.9rem;
+    }
+
+    /* Правим 5-дневната прогноза леко по-компактна */
+    .forecast-day {
+        padding: 8px 4px;
+        font-size: 0.7rem;
+    }
+    
+    #map {
+        height: 160px; /* Намаляваме височината на картата на телефон */
+    }
+}
+
+/* --- Центриране и позициониране на бутона за геолокация --- */
+.input-wrapper {
+    position: relative;
+    flex: 1;
+    display: flex;
+    align-items: center;
+}
+
+#location-btn {
+    position: absolute;
+    right: 15px;
+    color: #38bdf8;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: transform 0.2s, color 0.2s;
+    z-index: 10; /* Сигурност, че иконата ще е над полето */
+}
+
+#location-btn:hover {
+    transform: scale(1.2);
+    color: #2563eb;
+}
+
+/* Настройваме инпута да има място за иконата отдясно */
+#city-input {
+    width: 100%;
+    padding-right: 45px !important; 
+}
+
+/* Оправяне на размерите на самата карта */
+#map {
+    height: 200px;
+    width: 100%;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
