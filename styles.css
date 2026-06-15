@@ -1,4 +1,4 @@
-/* --- Глобални стилове и нулиране --- */
+/* Global styles and reset */
 @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
 
 * {
@@ -26,7 +26,7 @@ body {
     100% { background-position: 0% 50%; }
 }
 
-/* --- Основен контейнер --- */
+/* Main container */
 .container {
     background: rgba(255, 255, 255, 0.04);
     backdrop-filter: blur(16px);
@@ -50,7 +50,7 @@ h1 {
     -webkit-text-fill-color: transparent;
 }
 
-/* --- Оптимизирана търсачка (Фикс за бутона) --- */
+/* Search box and input optimization */
 .search-box {
     display: flex;
     width: 100%;
@@ -93,7 +93,7 @@ button:hover {
     box-shadow: 0 6px 20px rgba(37, 99, 235, 0.4);
 }
 
-/* --- История на търсенията --- */
+/* Search history container */
 .history-container {
     display: flex;
     flex-wrap: wrap;
@@ -119,7 +119,7 @@ button:hover {
     color: #fff;
 }
 
-/* --- Основна Карта за Времето --- */
+/* Weather card - main display */
 .weather-card {
     text-align: center;
     animation: fadeIn 0.5s ease-out;
@@ -170,7 +170,7 @@ button:hover {
     margin-bottom: 15px;
 }
 
-/* --- Почасова Прогноза (Скрол) --- */
+/* Hourly forecast scroll container */
 .hourly-scroll {
     display: flex;
     gap: 12px;
@@ -213,7 +213,7 @@ button:hover {
     font-size: 1rem;
 }
 
-/* --- Новата мрежа за 4-те уиджета (2x2 Grid) --- */
+/* Grid layout for 4 metric widgets (2x2) */
 .metrics-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -256,7 +256,7 @@ button:hover {
     font-weight: 600;
 }
 
-/* --- Изгрев и Залез --- */
+/* Sunrise and sunset metrics */
 .sun-metrics {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.02);
@@ -273,7 +273,7 @@ button:hover {
     color: #e2e8f0;
 }
 
-/* --- 5-дневна Прогноза (Grid) --- */
+/* 5-day forecast grid */
 .forecast-grid {
     display: grid;
     grid-template-columns: repeat(5, 1fr);
@@ -304,7 +304,7 @@ button:hover {
     color: #fff;
 }
 
-/* --- Превключвател и Обновяване --- */
+/* Unit toggle button and update status */
 #unit-toggle {
     background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.2);
@@ -325,7 +325,7 @@ button:hover {
     letter-spacing: 0.5px;
 }
 
-/* --- Помощни състояния (Loading, Error) --- */
+/* Loading and error message states */
 #loading {
     text-align: center;
     font-size: 1.1rem;
@@ -343,14 +343,13 @@ button:hover {
     font-size: 0.9rem;
     margin: 15px 0;
 }
-/* Ефект за бутона за геолокация */
+/* Geolocation button hover effect */
 #location-btn:hover {
     transform: scale(1.2);
     color: #2563eb !important;
 }
-/* --- РЕСПОНСИВ ДИЗАЙН (МЕДИЙНИ ЗАЯВКИ) --- */
 
-/* За мобилни телефони (екран под 480px) */
+/* Responsive design - mobile phones (screens under 480px) */
 @media (max-width: 480px) {
     body {
         padding: 10px;
@@ -408,11 +407,11 @@ button:hover {
     }
     
     #map {
-        height: 160px; /* Намаляваме височината на картата на телефон */
+        height: 160px; /* Reduce map height on mobile */
     }
 }
 
-/* --- Центриране и позициониране на бутона за геолокация --- */
+/* Geolocation button - positioning and centering */
 .input-wrapper {
     position: relative;
     flex: 1;
@@ -435,13 +434,13 @@ button:hover {
     color: #2563eb;
 }
 
-/* Настройваме инпута да има място за иконата отдясно */
+/* Adjust input padding to make space for geolocation icon */
 #city-input {
     width: 100%;
     padding-right: 45px !important; 
 }
 
-/* Оправяне на размерите на самата карта */
+/* Map sizing and styling */
 #map {
     height: 200px;
     width: 100%;

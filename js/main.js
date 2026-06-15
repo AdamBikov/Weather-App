@@ -2,75 +2,86 @@ import { DOM, weatherIcons, weatherDescriptions, translations } from './ui.js';
 import { getCoordinates, getWeather } from './api.js';
 import { saveToHistory, getHistory } from './storage.js';
 
-let currentTempCelsius = null;
-let isCelsius = true;
-let currentWeatherData = null; // Пази суровите данни от API-то за преизчисляване при смяна на °C/°F
-let currentLang = localStorage.getItem('app_lang') || null;
-let map;
-let marker;
+// Global variables
+let currentTempCelsius = null; // Stores current temperature in Celsius
+let isCelsius = true; // Temperature unit flag
+let currentWeatherData = null; // Stores raw weather data for unit conversion
+let currentLang = localStorage.getItem('app_lang') || null; // Current language
+let map; // Leaflet map instance
+let marker; // Map marker
 
-// --- ИНТЕРНАЦИОНАЛИЗАЦИЯ (ЕЗИЦИ) ---
+// Apply language translations to all UI elements
 function applyLanguage(lang) {
     currentLang = lang;
     localStorage.setItem('app_lang', lang);
     const t = translations[lang];
 
-    // Смяна на статичните текстове в главния интерфейс
-    document.querySelector('h1').textContent = t.title;
+    // Update main UI text elements
+    const headings = document.querySelectorAll('h1');
+    if (headings.length > 0) headings[0].textContent = t.title;
     DOM.cityInput.placeholder = t.placeholder;
-    document.querySelector('button[type="submit"]').textContent = t.search;
+    const submitBtn = document.querySelector('button[type="submit"]');
+    if (submitBtn) submitBtn.textContent = t.search;
     DOM.loading.textContent = t.loading;
     
-    // Смяна на етикетите вътре в самите уиджети чрез съседните им елементи
-    if (DOM.apparentTemp) DOM.apparentTemp.previousElementSibling.textContent = t.feelsLike;
-    if (DOM.uvIndex) DOM.uvIndex.previousElementSibling.textContent = t.uvIndex;
-    if (DOM.rainChance) DOM.rainChance.previousElementSibling.textContent = t.rainChance;
-    if (DOM.windSpeed) DOM.windSpeed.previousElementSibling.textContent = t.wind;
+    // Update metric widget labels
+    const metricSpans = document.querySelectorAll('.metric-widget span:not(.forecast-date, .forecast-temp)');
+    if (metricSpans.length >= 4) {
+        metricSpans[0].textContent = t.feelsLike;
+        metricSpans[1].textContent = t.uvIndex;
+        metricSpans[2].textContent = t.rainChance;
+        metricSpans[3].textContent = t.wind;
+    }
     
-    // Обновяване на бутона за мерни единици спрямо езика
+    // Update language switch button
+    const langCodes = { en: 'EN 🇬🇧', bg: 'БГ 🇧🇬', de: 'DE 🇩🇪', sk: 'SK 🇸🇰' };
+    if (DOM.langSwitchBtn) DOM.langSwitchBtn.textContent = langCodes[lang] || 'EN 🇬🇧';
+    
+    // Update temperature toggle button text
     updateToggleButtonText();
 
-    // Ако вече има заредено време на екрана, преначертаваме текстовете му веднага
+    // Refresh weather display if data is already loaded
     if (currentWeatherData && DOM.weatherResult.style.display === 'block') {
         refreshWeatherDisplay();
     }
 }
 
+// Check if language is set and show modal on first visit
 function checkLanguage() {
     const modal = document.getElementById('language-modal');
     if (!currentLang) {
-        modal.style.display = 'flex'; // Показваме попъпа при първо влизане
+        modal.style.display = 'flex'; // Show modal on first visit
     } else {
         applyLanguage(currentLang);
     }
 
-    // Закачане на събития за езиковите бутони в попъпа
+    // Add click event listeners to language modal buttons
     document.querySelectorAll('.lang-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             const selectedLang = e.currentTarget.getAttribute('data-lang');
             applyLanguage(selectedLang);
             modal.style.display = 'none';
-            // След избор на език, автоматично пускаме геолокацията за по-добро изживяване
+            // Auto-trigger geolocation after language selection for better UX
             DOM.locationBtn.click();
         });
     });
 }
 
+// Update temperature toggle button text based on current language and unit
 function updateToggleButtonText() {
-    const isBg = currentLang === 'bg';
     if (isCelsius) {
-        DOM.unitToggle.textContent = isBg ? 'Към °F' : 'To °F';
+        DOM.unitToggle.textContent = currentLang === 'bg' ? 'Към °F' : currentLang === 'de' ? 'Zu °F' : currentLang === 'sk' ? 'Na °F' : 'To °F';
     } else {
-        DOM.unitToggle.textContent = isBg ? 'Към °C' : 'To °C';
+        DOM.unitToggle.textContent = currentLang === 'bg' ? 'Към °C' : currentLang === 'de' ? 'Zu °C' : currentLang === 'sk' ? 'Na °C' : 'To °C';
     }
 }
 
-// --- МАТЕМАТИЧЕСКО КОНВЕРТИРАНЕ НА ГРАДУСИ ---
+// Convert temperature between Celsius and Fahrenheit
 function convertTemp(celsius) {
     return isCelsius ? Math.round(celsius) : Math.round((celsius * 9/5) + 32);
 }
 
-// --- РЕНДИРАНЕ НА ИСТОРИЯТА ---
+// Render search history as clickable items
 function renderHistory() {
     const history = getHistory();
     DOM.historyContainer.innerHTML = '';
@@ -83,7 +94,7 @@ function renderHistory() {
     });
 }
 
-// --- РЕНДИРАНЕ НА ВРЕМЕТО (ОБНОВЕНА) ---
+// Display current weather information
 function displayWeather(data, name, country, dailyData, hourlyData) {
     currentTempCelsius = data.temperature;
     const unit = isCelsius ? '°C' : '°F';
@@ -91,11 +102,11 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
     
     DOM.cityName.textContent = `${name}, ${country}`;
     DOM.temperature.textContent = `${convertTemp(currentTempCelsius)}${unit}`;
-    DOM.windSpeed.textContent = `${data.windspeed} км/ч`;
+    DOM.windSpeed.textContent = `${data.windspeed} km/h`;
 
     const currentHourIndex = new Date().getHours();
 
-    // 1. Усеща се като (Конвертиран)
+    // Display feels-like temperature
     if (hourlyData && hourlyData.apparent_temperature) {
         const feelsLike = hourlyData.apparent_temperature[currentHourIndex];
         DOM.apparentTemp.textContent = `${convertTemp(feelsLike)}${unit}`;
@@ -103,7 +114,7 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
         DOM.apparentTemp.textContent = `--${unit}`;
     }
 
-    // 2. UV Индекс
+    // Display UV index with risk level
     if (dailyData && dailyData.uv_index_max) {
         const uv = dailyData.uv_index_max[0];
         let risk = t.riskLow;
@@ -114,7 +125,7 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
         DOM.uvIndex.textContent = `--`;
     }
 
-    // 3. Шанс за дъжд
+    // Display rain chance percentage
     if (hourlyData && hourlyData.precipitation_probability) {
         const rainChance = hourlyData.precipitation_probability[currentHourIndex];
         DOM.rainChance.textContent = `${rainChance}%`;
@@ -122,7 +133,7 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
         DOM.rainChance.textContent = `--%`;
     }
 
-    // 4. Изгрев и Залез
+    // Display sunrise and sunset times
     if (dailyData && dailyData.sunrise && dailyData.sunset) {
         const sunriseHTML = dailyData.sunrise[0].split('T')[1];
         const sunsetHTML = dailyData.sunset[0].split('T')[1];
@@ -133,22 +144,23 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
         DOM.sunsetTime.innerHTML = `<i class="fas fa-moon"></i> ${t.sunset}: --:--`;
     }
 
-    const description = weatherDescriptions[data.weathercode] || "Неизвестно";
+    const description = weatherDescriptions[currentLang]?.[data.weathercode] || weatherDescriptions.en[data.weathercode] || "Unknown";
     DOM.weatherCondition.textContent = description;
 
     const iconClass = weatherIcons[data.weathercode] || "fa-cloud";
     DOM.weatherIcon.className = `fas ${iconClass} fa-3x`;
 
     const now = new Date();
-    const formatter = new Intl.DateTimeFormat(currentLang === 'bg' ? 'bg-BG' : 'en-US', {
-        hour: '2-digit', minute: '2-digit', second: '2-digit'
-    });
-    DOM.lastUpdated.textContent = `${t.updated}: ${formatter.format(now)} ч.`;
+    const formatter = new Intl.DateTimeFormat(
+        currentLang === 'bg' ? 'bg-BG' : currentLang === 'de' ? 'de-DE' : currentLang === 'sk' ? 'sk-SK' : 'en-US',
+        { hour: '2-digit', minute: '2-digit', second: '2-digit' }
+    );
+    DOM.lastUpdated.textContent = `${t.updated}: ${formatter.format(now)}`;
     
     DOM.weatherResult.style.display = 'block';
 }
 
-// --- ПОЧАСОВА ПРОГНОЗА (ОБНОВЕНА НАВСЯКЪДЕ) ---
+// Display hourly weather forecast for the next 10 hours
 function displayHourly(hourlyData) {
     DOM.hourlyContainer.innerHTML = '';
     DOM.hourlyContainer.style.display = 'flex';
@@ -158,7 +170,8 @@ function displayHourly(hourlyData) {
     for (let i = currentHour; i < currentHour + 10; i++) {
         if (i >= hourlyData.time.length) break;
         const rawTime = new Date(hourlyData.time[i]);
-        const formattedHour = rawTime.toLocaleTimeString(currentLang === 'bg' ? 'bg-BG' : 'en-US', { hour: '2-digit', minute: '2-digit' });
+        const locale = currentLang === 'bg' ? 'bg-BG' : currentLang === 'de' ? 'de-DE' : currentLang === 'sk' ? 'sk-SK' : 'en-US';
+        const formattedHour = rawTime.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
         
         const temp = convertTemp(hourlyData.apparent_temperature[i]);
         const code = hourlyData.precipitation_probability[i];
@@ -175,7 +188,7 @@ function displayHourly(hourlyData) {
     }
 }
 
-// --- 5-ДНЕВНА ПРОГНОЗА (ОБНОВЕНА НАВСЯКЪДЕ) ---
+// Display 5-day weather forecast
 function displayForecast(dailyData) {
     const container = document.getElementById('forecast-container');
     container.innerHTML = '';
@@ -184,7 +197,8 @@ function displayForecast(dailyData) {
 
     for (let i = 1; i <= 5; i++) {
         const timestamp = dailyData.time[i];
-        const date = new Date(timestamp).toLocaleDateString(currentLang === 'bg' ? 'bg-BG' : 'en-US', { weekday: 'short' });
+        const locale = currentLang === 'bg' ? 'bg-BG' : currentLang === 'de' ? 'de-DE' : currentLang === 'sk' ? 'sk-SK' : 'en-US';
+        const date = new Date(timestamp).toLocaleDateString(locale, { weekday: 'short' });
         
         const maxTemp = convertTemp(dailyData.temperature_2m_max[i]);
         const weatherCode = dailyData.weathercode[i];
@@ -201,7 +215,7 @@ function displayForecast(dailyData) {
     }
 }
 
-// Помощна функция за бързо преначертаване при суичване на език/мерни единици
+// Refresh weather display when language or temperature unit changes
 function refreshWeatherDisplay() {
     const namePart = DOM.cityName.textContent.split(',')[0].trim();
     const countryPart = DOM.cityName.textContent.split(',')[1]?.trim() || '';
@@ -217,7 +231,7 @@ function refreshWeatherDisplay() {
     displayForecast(currentWeatherData.daily);
 }
 
-// --- ИЗВЛИЧАНЕ ПО ИМЕ НА ГРАД ---
+// Fetch weather data by city name
 async function fetchWeather(city) {
     DOM.loading.style.display = 'block';
     DOM.errorMessage.style.display = 'none';
@@ -227,7 +241,7 @@ async function fetchWeather(city) {
         const geoData = await getCoordinates(city);
         const weatherData = await getWeather(geoData.latitude, geoData.longitude);
         
-        currentWeatherData = weatherData; // Записваме в глобалната променлива
+        currentWeatherData = weatherData; // Store for unit conversion
         
         displayWeather(
             weatherData.current_weather, 
@@ -254,7 +268,7 @@ async function fetchWeather(city) {
     }
 }
 
-// --- ИНИЦИАЛИЗАЦИЯ НА ИНТЕРАКТИВНА КАРТА ---
+// Initialize Leaflet map
 function initMap() {
     const defaultLat = 42.6977;
     const defaultLon = 23.3219;
@@ -266,6 +280,7 @@ function initMap() {
 
     marker = L.marker([defaultLat, defaultLon]).addTo(map);
 
+    // Handle map click to fetch weather for clicked location
     map.on('click', async function(e) {
         const lat = e.latlng.lat;
         const lon = e.latlng.lng;
@@ -285,7 +300,7 @@ function initMap() {
             const countryName = address.country || "";
 
             const weatherData = await getWeather(lat, lon);
-            currentWeatherData = weatherData; // Записваме в глобалната променлива
+            currentWeatherData = weatherData; // Store for unit conversion
 
             displayWeather(
                 weatherData.current_weather, 
@@ -306,16 +321,18 @@ function initMap() {
     });
 }
 
-// --- СЛУШАТЕЛИ ЗА СЪБИТИЯ (EVENT LISTENERS) ---
+// Event listeners
 DOM.searchForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const city = DOM.cityInput.value.trim();
     if (city) fetchWeather(city);
 });
 
+// Handle geolocation button click
 DOM.locationBtn.addEventListener('click', () => {
+    const t = translations[currentLang] || translations.en;
     if (!navigator.geolocation) {
-        alert('Геолокацията не се поддържа от вашия браузър.');
+        alert(t.geoNotSupported);
         return;
     }
     DOM.loading.style.display = 'block';
@@ -341,7 +358,7 @@ DOM.locationBtn.addEventListener('click', () => {
             const countryName = address.country || "";
 
             const weatherData = await getWeather(lat, lon);
-            currentWeatherData = weatherData; // Записваме в глобалната променлива
+            currentWeatherData = weatherData; // Store for unit conversion
 
             displayWeather(
                 weatherData.current_weather, 
@@ -361,22 +378,30 @@ DOM.locationBtn.addEventListener('click', () => {
         }
     }, (error) => {
         DOM.loading.style.display = 'none';
-        const isBg = currentLang === 'bg';
-        DOM.errorMessage.textContent = isBg ? "Достъпът до локация бе отказан." : "Location access denied.";
+        const t = translations[currentLang] || translations.en;
+        DOM.errorMessage.textContent = t.locationDenied;
         DOM.errorMessage.style.display = 'block';
     });
 });
 
-// МОДЕРЕН СУИЧ ЗА МЕРНИ ЕДИНИЦИ (СМЕНЯ НАВСЯКЪДЕ НАВЕДНЪЖ)
+// Handle temperature unit toggle (Celsius/Fahrenheit)
 DOM.unitToggle.addEventListener('click', () => {
     if (!currentWeatherData) return;
     
-    isCelsius = !isCelsius; // Обръщаме флага
-    updateToggleButtonText(); // Сменяме текста на бутона
-    refreshWeatherDisplay(); // Магическо преизчисляване и прерисуване
+    isCelsius = !isCelsius; // Toggle temperature unit
+    updateToggleButtonText(); // Update button text
+    refreshWeatherDisplay(); // Recalculate and refresh display
 });
 
-// --- СТАРТИРАНЕ СЛЕД ЗАРЕЖДАНЕ НА КАРТАТА И DOM СТРУКТУРАТА ---
+// Handle language switch button
+if (DOM.langSwitchBtn) {
+    DOM.langSwitchBtn.addEventListener('click', () => {
+        const modal = document.getElementById('language-modal');
+        modal.style.display = 'flex'; // Show language selection modal
+    });
+}
+
+// Initialize app when DOM is fully loaded
 document.addEventListener('DOMContentLoaded', () => {
     checkLanguage();
     renderHistory();

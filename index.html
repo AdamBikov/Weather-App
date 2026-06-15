@@ -22,14 +22,17 @@
     </div>
 
     <div class="container">
-        <h1>Прогноза за времето</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h1 style="margin: 0;">Прогноза за времето</h1>
+            <button id="lang-switch-btn" style="padding: 8px 14px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.3s ease;">🌐 EN</button>
+        </div>
         
         <form id="search-form" class="search-box">
             <div class="input-wrapper">
-                <input type="text" id="city-input" placeholder="Въведете град на английски..." required>
+                <input type="text" id="city-input" placeholder="Enter city in English..." required>
                 <i id="location-btn" class="fas fa-crosshairs"></i>
             </div>
-        <button type="submit">Търси</button>
+        <button type="submit">Search</button>
         </form>
         
         <div id="search-history" class="history-container"></div>
@@ -38,7 +41,7 @@
             <div id="map"></div>
         </div>
         
-        <div id="loading" style="display: none;">Зареждане...</div>
+        <div id="loading" style="display: none;">Loading...</div>
         <div id="error-message" style="display: none;"></div>
         
         <div id="weather-result" class="weather-card" style="display: none;">
@@ -57,34 +60,34 @@
             <div class="metrics-grid">
                 <div class="metric-widget">
                     <i class="fas fa-thermometer-half"></i>
-                    <span>Усеща се</span>
+                    <span>Feels like</span>
                     <strong id="apparent-temp">--°C</strong>
                 </div>
                 <div class="metric-widget">
                     <i class="fas fa-sun"></i>
-                    <span>UV Индекс</span>
+                    <span>UV Index</span>
                     <strong id="uv-index">--</strong>
                 </div>
                 <div class="metric-widget">
                     <i class="fas fa-tint"></i>
-                    <span>Шанс за дъжд</span>
+                    <span>Rain chance</span>
                     <strong id="rain-chance">--%</strong>
                 </div>
                 <div class="metric-widget">
                     <i class="fas fa-wind"></i>
-                    <span>Вятър</span>
-                    <strong id="wind-speed">-- км/ч</strong>
+                    <span>Wind</span>
+                    <strong id="wind-speed">-- km/h</strong>
                 </div>
             </div>
 
             <div class="sun-metrics">
-                <p id="sunrise-time"><i class="fas fa-sun"></i> Изгрев: --:--</p>
-                <p id="sunset-time"><i class="fas fa-moon"></i> Залез: --:--</p>
+                <p id="sunrise-time"><i class="fas fa-sun"></i> Sunrise: --:--</p>
+                <p id="sunset-time"><i class="fas fa-moon"></i> Sunset: --:--</p>
             </div>
 
             <div id="forecast-container" class="forecast-grid"></div>
             
-            <button id="unit-toggle">Към °F</button>
+            <button id="unit-toggle">To °F</button>
         </div>
     </div>
 

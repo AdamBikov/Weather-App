@@ -1,7 +1,9 @@
+// DOM element references
 export const DOM = {
     searchForm: document.getElementById('search-form'),
     cityInput: document.getElementById('city-input'),
     locationBtn: document.getElementById('location-btn'),
+    langSwitchBtn: document.getElementById('lang-switch-btn'),
     historyContainer: document.getElementById('search-history'),
     loading: document.getElementById('loading'),
     errorMessage: document.getElementById('error-message'),
@@ -14,18 +16,19 @@ export const DOM = {
     unitToggle: document.getElementById('unit-toggle'),
     hourlyContainer: document.getElementById('hourly-container'),
     
-    // Новите 4 уиджета (свързани по ID с <strong> таговете от HTML)
+    // Weather metrics widgets
     apparentTemp: document.getElementById('apparent-temp'),
     uvIndex: document.getElementById('uv-index'),
     rainChance: document.getElementById('rain-chance'),
     windSpeed: document.getElementById('wind-speed'),
     
-    // Слънчеви метрики
+    // Sun rise/set metrics
     sunriseTime: document.getElementById('sunrise-time'),
     sunsetTime: document.getElementById('sunset-time'),
     map: document.getElementById('map')
 };
 
+// Weather condition icon mappings (WMO codes)
 export const weatherIcons = {
     0: 'fa-sun',
     1: 'fa-cloud-sun',
@@ -48,28 +51,95 @@ export const weatherIcons = {
     95: 'fa-cloud-bolt'
 };
 
+// Weather condition descriptions for all supported languages
 export const weatherDescriptions = {
-    0: 'Ясно небе',
-    1: 'Предимно ясно',
-    2: 'Частична облачност',
-    3: 'Облачно',
-    45: 'Мъгла',
-    48: 'Скреж на мъгла',
-    51: 'Лек ръмеж',
-    53: 'Умерен ръмеж',
-    55: 'Интензивен ръмеж',
-    61: 'Лек дъжд',
-    63: 'Умерен дъжд',
-    65: 'Силен дъжд',
-    71: 'Лек снеговалеж',
-    73: 'Умерен sнеговалеж',
-    75: 'Силен снеговалеж',
-    80: 'Леки превалявания',
-    81: 'Умерени превалявания',
-    82: 'Силни превалявания',
-    95: 'Гръмотевична буря'
+    bg: {
+        0: 'Ясно небе',
+        1: 'Предимно ясно',
+        2: 'Частична облачност',
+        3: 'Облачно',
+        45: 'Мъгла',
+        48: 'Скреж на мъгла',
+        51: 'Лек ръмеж',
+        53: 'Умерен ръмеж',
+        55: 'Интензивен ръмеж',
+        61: 'Лек дъжд',
+        63: 'Умерен дъжд',
+        65: 'Силен дъжд',
+        71: 'Лек снеговалеж',
+        73: 'Умерен снеговалеж',
+        75: 'Силен снеговалеж',
+        80: 'Леки превалявания',
+        81: 'Умерени превалявания',
+        82: 'Силни превалявания',
+        95: 'Гръмотевична буря'
+    },
+    en: {
+        0: 'Clear sky',
+        1: 'Mostly clear',
+        2: 'Partly cloudy',
+        3: 'Cloudy',
+        45: 'Fog',
+        48: 'Fog with rime',
+        51: 'Light drizzle',
+        53: 'Moderate drizzle',
+        55: 'Heavy drizzle',
+        61: 'Light rain',
+        63: 'Moderate rain',
+        65: 'Heavy rain',
+        71: 'Light snow',
+        73: 'Moderate snow',
+        75: 'Heavy snow',
+        80: 'Light showers',
+        81: 'Moderate showers',
+        82: 'Heavy showers',
+        95: 'Thunderstorm'
+    },
+    de: {
+        0: 'Klarer Himmel',
+        1: 'Überwiegend klar',
+        2: 'Teilweise bewölkt',
+        3: 'Bewölkt',
+        45: 'Nebel',
+        48: 'Nebel mit Reif',
+        51: 'Leichter Niesel',
+        53: 'Mäßiger Niesel',
+        55: 'Intensiver Niesel',
+        61: 'Leichter Regen',
+        63: 'Mäßiger Regen',
+        65: 'Intensiver Regen',
+        71: 'Leichte Schneefälle',
+        73: 'Mäßige Schneefälle',
+        75: 'Intensive Schneefälle',
+        80: 'Leichte Schauer',
+        81: 'Mäßige Schauer',
+        82: 'Intensive Schauer',
+        95: 'Gewitter'
+    },
+    sk: {
+        0: 'Čisté nebo',
+        1: 'Väčšinou jasno',
+        2: 'Čiastočne zamračené',
+        3: 'Zamračené',
+        45: 'Hmla',
+        48: 'Hmla s ľadom',
+        51: 'Slabá rosa',
+        53: 'Mierna rosa',
+        55: 'Silná rosa',
+        61: 'Slabý dážď',
+        63: 'Mierny dážď',
+        65: 'Silný dážď',
+        71: 'Slabý sneh',
+        73: 'Mierny sneh',
+        75: 'Silný sneh',
+        80: 'Slabé prehánky',
+        81: 'Mierné prehánky',
+        82: 'Silné prehánky',
+        95: 'Búrka'
+    }
 };
 
+// Multi-language translations for UI elements
 export const translations = {
     bg: {
         title: "Прогноза за времето",
@@ -84,7 +154,11 @@ export const translations = {
         toggle: "Към °F",
         loading: "Зареждане...",
         riskLow: "Нисък", riskMed: "Умерен", riskHigh: "Висок",
-        updated: "Последно обновяване"
+        updated: "Последно обновяване",
+        cityNotFound: "Городът не е намерен.",
+        fetchError: "Грешка при извличане на данни за времето",
+        locationDenied: "Достъпът до локация бе отказан.",
+        geoNotSupported: "Геолокацията не се поддържа от вашия браузър."
     },
     en: {
         title: "Weather Forecast",
@@ -99,7 +173,11 @@ export const translations = {
         toggle: "To °F",
         loading: "Loading...",
         riskLow: "Low", riskMed: "Moderate", riskHigh: "High",
-        updated: "Last updated"
+        updated: "Last updated",
+        cityNotFound: "City not found.",
+        fetchError: "Error fetching weather data",
+        locationDenied: "Location access denied.",
+        geoNotSupported: "Geolocation is not supported by your browser."
     },
     de: {
         title: "Wettervorhersage",
@@ -114,7 +192,11 @@ export const translations = {
         toggle: "Zu °F",
         loading: "Laden...",
         riskLow: "Niedrig", riskMed: "Mäßig", riskHigh: "Hoch",
-        updated: "Zuletzt aktualisiert"
+        updated: "Zuletzt aktualisiert",
+        cityNotFound: "Stadt nicht gefunden.",
+        fetchError: "Fehler beim Abrufen von Wetterdaten",
+        locationDenied: "Standortzugriff verweigert.",
+        geoNotSupported: "Geolokalisierung wird von Ihrem Browser nicht unterstützt."
     },
     sk: {
         title: "Predpoveď počasia",
@@ -127,8 +209,12 @@ export const translations = {
         sunrise: "Východ slnka",
         sunset: "Západ slnka",
         toggle: "Na °F",
-        loading: "Načitavam...",
+        loading: "Načítavam...",
         riskLow: "Nízky", riskMed: "Mierny", riskHigh: "Vysoký",
-        updated: "Posledná aktualizácia"
+        updated: "Posledná aktualizácia",
+        cityNotFound: "Mesto sa nenašlo.",
+        fetchError: "Chyba pri získavaní údajov o počasí",
+        locationDenied: "Prístup k polohe bol zamietnutý.",
+        geoNotSupported: "Geolokácia nie je podporovaná vašim prehliadačom."
     }
 };
