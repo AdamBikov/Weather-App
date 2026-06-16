@@ -69,7 +69,7 @@
                             type="text" 
                             id="city-input" 
                             class="search-input" 
-                            placeholder="Search city..."
+                            placeholder="Search for a city..."
                             required
                         >
                         <button type="button" id="location-btn" class="location-btn" title="Use my location">
@@ -172,7 +172,7 @@
 
                         <div class="insight-card">
                             <div class="insight-icon">
-                                <i class="fas fa-sunrise"></i>
+                                <i class="fas fa-sun"></i>
                             </div>
                             <div class="insight-content">
                                 <p class="insight-label">Sunrise</p>
@@ -198,22 +198,23 @@
                     <div id="forecast-container" class="forecast-list"></div>
                 </section>
 
-                <!-- Map Card -->
-                <section class="map-section">
-                    <div class="map-card">
-                        <div id="map" class="map-container"></div>
-                    </div>
-                </section>
-
-                <!-- Unit Toggle -->
-                <section class="settings-section">
-                    <button id="unit-toggle" class="unit-toggle-btn">
-                        <i class="fas fa-temperature-high"></i>
-                        <span id="unit-text">Switch to °F</span>
-                    </button>
-                </section>
-
             </div>
+
+            <!-- Map Card (outside hidden weather-content so Leaflet can measure it) -->
+            <section class="map-section">
+                <div class="map-card">
+                    <div id="map-container" class="map-container"></div>
+                </div>
+            </section>
+
+            <!-- Unit Toggle -->
+            <section class="settings-section">
+                <button id="unit-toggle" class="unit-toggle-btn">
+                    <i class="fas fa-temperature-high"></i>
+                    <span id="unit-text">Switch to °F</span>
+                </button>
+            </section>
+
         </div>
     </main>
 

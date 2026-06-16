@@ -1,4 +1,8 @@
-// DOM element references
+/**
+ * DOM object - collects all important HTML elements by their IDs.
+ * Querying the DOM once at startup is more efficient than searching
+ * for elements every time we need them.
+ */
 export const DOM = {
     searchForm: document.getElementById('search-form'),
     cityInput: document.getElementById('city-input'),
@@ -14,22 +18,32 @@ export const DOM = {
     weatherIcon: document.getElementById('weather-icon'),
     lastUpdated: document.getElementById('last-updated'),
     unitToggle: document.getElementById('unit-toggle'),
-    
-    // Hourly forecast container
+    unitText: document.getElementById('unit-text'),
+
+    // Weather details
+    tempHigh: document.getElementById('temp-high'),
+    tempLow: document.getElementById('temp-low'),
+    feelsLikeText: document.getElementById('feels-like-text'),
+    apparentTemp: document.getElementById('apparent-temp'),
+    uvIndex: document.getElementById('uv-index'),
+    sunriseTime: document.getElementById('sunrise-time'),
+    sunsetTime: document.getElementById('sunset-time'),
+
+    // Containers
     hourlyContainer: document.getElementById('hourly-container'),
-    
+    forecastContainer: document.getElementById('forecast-container'),
+    bgLayer: document.getElementById('bg-layer'),
+
     // Weather metrics/insights
     rainChance: document.getElementById('rain-chance'),
-    windSpeed: document.getElementById('wind-speed'),
-    
-    // Forecast containers
-    forecastContainer: document.getElementById('forecast-container'),
-    
-    // Map
-    mapContainer: document.getElementById('map-container')
+    windSpeed: document.getElementById('wind-speed')
 };
 
-// Weather condition icon mappings (WMO codes)
+/**
+ * Maps WMO weather codes to Font Awesome icon classes.
+ * Each code represents a specific condition (clear, cloudy, rain, etc.).
+ * Used by both the current weather display and the forecast.
+ */
 export const weatherIcons = {
     0: 'fa-sun',
     1: 'fa-cloud-sun',
@@ -52,7 +66,10 @@ export const weatherIcons = {
     95: 'fa-cloud-bolt'
 };
 
-// Weather condition descriptions for all supported languages
+/**
+ * Weather descriptions translated into all 4 supported languages.
+ * Keys are WMO weather codes, values are the human-readable condition names.
+ */
 export const weatherDescriptions = {
     bg: {
         0: 'Ясно небе',
@@ -140,11 +157,14 @@ export const weatherDescriptions = {
     }
 };
 
-// Multi-language translations for UI elements
+/**
+ * All UI text labels in 4 languages (English, Bulgarian, German, Slovak).
+ * The app defaults to English if a translation key is not found.
+ */
 export const translations = {
     bg: {
         title: "Прогноза за времето",
-        placeholder: "Въведете град на английски...",
+        placeholder: "Търсене на град...",
         search: "Търси",
         hourlyLabel: "Почасова прогноза",
         detailsLabel: "Детайли за времето",
@@ -166,7 +186,7 @@ export const translations = {
     },
     en: {
         title: "Weather Forecast",
-        placeholder: "Enter city in English...",
+        placeholder: "Search for a city...",
         search: "Search",
         hourlyLabel: "Hourly Forecast",
         detailsLabel: "Weather Details",
@@ -188,7 +208,7 @@ export const translations = {
     },
     de: {
         title: "Wettervorhersage",
-        placeholder: "Stadt auf Englisch eingeben...",
+        placeholder: "Stadt suchen...",
         search: "Suchen",
         hourlyLabel: "Stündliche Vorhersage",
         detailsLabel: "Wetterdetails",
@@ -210,7 +230,7 @@ export const translations = {
     },
     sk: {
         title: "Predpoveď počasia",
-        placeholder: "Zadajte mesto v angličtine...",
+        placeholder: "Vyhľadať mesto...",
         search: "Hľadať",
         hourlyLabel: "Hodinová predpoveď",
         detailsLabel: "Detaily počasia",

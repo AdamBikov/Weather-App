@@ -1,27 +1,35 @@
+/**
+ * Main application logic - connects the UI, API, and Storage modules.
+ * Handles user input, fetches weather data, and updates the display.
+ */
+
 import { DOM, weatherIcons, weatherDescriptions, translations } from './ui.js';
 import { getCoordinates, getWeather } from './api.js';
-import { saveToHistory, getHistory } from './storage.js';
+import { saveToHistory, getHistory, saveLastCity, getLastCity } from './storage.js';
 
-// Global variables
-let currentTempCelsius = null; // Stores current temperature in Celsius
-let isCelsius = true; // Temperature unit flag
-let currentWeatherData = null; // Stores raw weather data for unit conversion
-let currentLang = localStorage.getItem('app_lang') || null; // Current language
-let map; // Leaflet map instance
-let marker; // Map marker
-let maxTempCelsius = null; // Daily high temperature
-let minTempCelsius = null; // Daily low temperature
+// Global state - these variables track the app's current data and settings
+let currentTempCelsius = null;
+let isCelsius = true;
+let currentWeatherData = null;
+let currentLang = localStorage.getItem('app_lang') || null;
+let map;
+let marker;
+let maxTempCelsius = null;
+let minTempCelsius = null;
 
-// Weather-specific background themes
+// Maps weather types to CSS classes for the dynamic background
 const weatherThemes = {
-    sunny: { bg: '#fbbf24', name: 'bg-sunny' },
-    cloudy: { bg: '#9ca3af', name: 'bg-cloudy' },
-    rainy: { bg: '#60a5fa', name: 'bg-rainy' },
-    snowy: { bg: '#e0f2fe', name: 'bg-snowy' },
-    stormy: { bg: '#7c3aed', name: 'bg-stormy' }
+    sunny: { name: 'bg-sunny' },
+    cloudy: { name: 'bg-cloudy' },
+    rainy: { name: 'bg-rainy' },
+    snowy: { name: 'bg-snowy' },
+    stormy: { name: 'bg-stormy' }
 };
 
-// Determine weather theme based on weather code
+/**
+ * Converts a WMO weather code into a theme name for the background.
+ * Groups similar codes together (e.g., all rain codes → 'rainy').
+ */
 function getWeatherTheme(weatherCode) {
     if ([0, 1].includes(weatherCode)) return 'sunny';
     if ([2, 3, 45, 48].includes(weatherCode)) return 'cloudy';
@@ -31,19 +39,14 @@ function getWeatherTheme(weatherCode) {
     return 'cloudy';
 }
 
-// Update dynamic background based on weather
+/** Switches the page background to match the current weather. */
 function updateBackgroundTheme(weatherCode) {
     const theme = getWeatherTheme(weatherCode);
-    const bgLayer = document.getElementById('bg-layer');
-    
-    // Remove all theme classes
-    Object.values(weatherThemes).forEach(t => bgLayer.classList.remove(t.name));
-    
-    // Add new theme class
-    bgLayer.classList.add(weatherThemes[theme].name);
+    Object.values(weatherThemes).forEach(t => DOM.bgLayer.classList.remove(t.name));
+    DOM.bgLayer.classList.add(weatherThemes[theme].name);
 }
 
-// Apply language translations to all UI elements
+/** Applies a language to all UI text labels and saves the preference. */
 function applyLanguage(lang) {
     currentLang = lang;
     localStorage.setItem('app_lang', lang);
@@ -56,8 +59,6 @@ function applyLanguage(lang) {
     if (headings.length >= 3) headings[2].textContent = t.forecastLabel || '7-Day Forecast';
 
     DOM.cityInput.placeholder = t.placeholder;
-    const submitBtn = document.querySelector('button[type="submit"]');
-    if (submitBtn) submitBtn.textContent = t.search;
     DOM.loading.textContent = t.loading;
     
     // Update insight card labels
@@ -68,19 +69,18 @@ function applyLanguage(lang) {
     });
     
     // Update language switch button
-    const langCodes = { en: '🌍', bg: '🌍', de: '🌍', sk: '🌍' };
     if (DOM.langSwitchBtn) DOM.langSwitchBtn.innerHTML = `<i class="fas fa-globe"></i>`;
     
     // Update temperature toggle button text
     updateToggleButtonText();
 
     // Refresh weather display if data is already loaded
-    if (currentWeatherData && document.getElementById('weather-content').style.display !== 'none') {
+    if (currentWeatherData && DOM.weatherContent.style.display !== 'none') {
         refreshWeatherDisplay();
     }
 }
 
-// Check if language is set and show modal on first visit
+/** Shows the language selection modal on first visit, otherwise applies saved language. */
 function checkLanguage() {
     const modal = document.getElementById('language-modal');
     if (!currentLang) {
@@ -101,21 +101,22 @@ function checkLanguage() {
     });
 }
 
-// Update temperature toggle button text based on current language and unit
+/** Updates the toggle button text when language or unit changes. */
 function updateToggleButtonText() {
+    const unitText = DOM.unitText;
     if (isCelsius) {
-        DOM.unitToggle.textContent = currentLang === 'bg' ? 'Към °F' : currentLang === 'de' ? 'Zu °F' : currentLang === 'sk' ? 'Na °F' : 'To °F';
+        unitText.textContent = currentLang === 'bg' ? 'Към °F' : currentLang === 'de' ? 'Zu °F' : currentLang === 'sk' ? 'Na °F' : 'To °F';
     } else {
-        DOM.unitToggle.textContent = currentLang === 'bg' ? 'Към °C' : currentLang === 'de' ? 'Zu °C' : currentLang === 'sk' ? 'Na °C' : 'To °C';
+        unitText.textContent = currentLang === 'bg' ? 'Към °C' : currentLang === 'de' ? 'Zu °C' : currentLang === 'sk' ? 'Na °C' : 'To °C';
     }
 }
 
-// Convert temperature between Celsius and Fahrenheit
+/** Converts Celsius to Fahrenheit if needed, always returns a rounded whole number. */
 function convertTemp(celsius) {
     return isCelsius ? Math.round(celsius) : Math.round((celsius * 9/5) + 32);
 }
 
-// Render search history as clickable items
+/** Renders the search history as clickable buttons below the search bar. */
 function renderHistory() {
     const history = getHistory();
     DOM.historyContainer.innerHTML = '';
@@ -128,13 +129,12 @@ function renderHistory() {
     });
 }
 
-// Display current weather information
+/** Updates the hero section with current weather data (temp, condition, wind, sunrise, etc.). */
 function displayWeather(data, name, country, dailyData, hourlyData) {
     currentTempCelsius = data.temperature;
     maxTempCelsius = dailyData?.temperature_2m_max?.[0] || data.temperature;
     minTempCelsius = dailyData?.temperature_2m_min?.[0] || data.temperature;
     
-    const unit = isCelsius ? '°C' : '°F';
     const shortUnit = isCelsius ? '°' : '°F';
     const t = translations[currentLang] || translations.en;
     
@@ -143,19 +143,19 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
     DOM.temperature.textContent = `${convertTemp(currentTempCelsius)}°`;
     
     // Update temperature range
-    document.getElementById('temp-high').textContent = `H: ${convertTemp(maxTempCelsius)}${shortUnit}`;
-    document.getElementById('temp-low').textContent = `L: ${convertTemp(minTempCelsius)}${shortUnit}`;
+    DOM.tempHigh.textContent = `H: ${convertTemp(maxTempCelsius)}${shortUnit}`;
+    DOM.tempLow.textContent = `L: ${convertTemp(minTempCelsius)}${shortUnit}`;
     
+    // Current hour index is used to pick the right data from the hourly array
     const currentHourIndex = new Date().getHours();
 
-    // Display feels-like temperature
     if (hourlyData && hourlyData.apparent_temperature) {
         const feelsLike = hourlyData.apparent_temperature[currentHourIndex];
-        document.getElementById('feels-like-text').textContent = `${t.feelsLike} ${convertTemp(feelsLike)}${shortUnit}`;
-        document.getElementById('apparent-temp').textContent = `${convertTemp(feelsLike)}${shortUnit}`;
+        DOM.feelsLikeText.textContent = `${t.feelsLike} ${convertTemp(feelsLike)}${shortUnit}`;
+        DOM.apparentTemp.textContent = `${convertTemp(feelsLike)}${shortUnit}`;
     } else {
-        document.getElementById('feels-like-text').textContent = `${t.feelsLike} --${shortUnit}`;
-        document.getElementById('apparent-temp').textContent = `--${shortUnit}`;
+        DOM.feelsLikeText.textContent = `${t.feelsLike} --${shortUnit}`;
+        DOM.apparentTemp.textContent = `--${shortUnit}`;
     }
 
     // Display UV index with risk level
@@ -164,9 +164,9 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
         let risk = t.riskLow;
         if (uv >= 3 && uv < 6) risk = t.riskMed;
         if (uv >= 6) risk = t.riskHigh;
-        document.getElementById('uv-index').textContent = `${uv} (${risk})`;
+        DOM.uvIndex.textContent = `${uv} (${risk})`;
     } else {
-        document.getElementById('uv-index').textContent = `--`;
+        DOM.uvIndex.textContent = `--`;
     }
 
     // Display rain chance percentage
@@ -182,13 +182,13 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
 
     // Display sunrise and sunset times
     if (dailyData && dailyData.sunrise && dailyData.sunset) {
-        const sunriseTime = dailyData.sunrise[0].split('T')[1];
-        const sunsetTime = dailyData.sunset[0].split('T')[1];
-        document.getElementById('sunrise-time').textContent = sunriseTime;
-        document.getElementById('sunset-time').textContent = sunsetTime;
+        const sunriseValue = dailyData.sunrise[0].split('T')[1];
+        const sunsetValue = dailyData.sunset[0].split('T')[1];
+        DOM.sunriseTime.textContent = sunriseValue;
+        DOM.sunsetTime.textContent = sunsetValue;
     } else {
-        document.getElementById('sunrise-time').textContent = '--:--';
-        document.getElementById('sunset-time').textContent = '--:--';
+        DOM.sunriseTime.textContent = '--:--';
+        DOM.sunsetTime.textContent = '--:--';
     }
 
     const description = weatherDescriptions[currentLang]?.[data.weathercode] || weatherDescriptions.en[data.weathercode] || "Unknown";
@@ -197,6 +197,7 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
     const iconClass = weatherIcons[data.weathercode] || "fa-cloud";
     DOM.weatherIcon.className = `fas ${iconClass} fa-4x`;
 
+    // Format the current time using the user's language locale (e.g., 14:30:00 vs 2:30:00 PM)
     const now = new Date();
     const formatter = new Intl.DateTimeFormat(
         currentLang === 'bg' ? 'bg-BG' : currentLang === 'de' ? 'de-DE' : currentLang === 'sk' ? 'sk-SK' : 'en-US',
@@ -207,14 +208,14 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
     // Update background theme
     updateBackgroundTheme(data.weathercode);
     
-    // Show weather content
-    document.getElementById('weather-content').style.display = 'block';
+    // Show weather content and fix map size after layout shift
+    DOM.weatherContent.style.display = 'block';
+    if (map) setTimeout(() => map.invalidateSize(), 100);
 }
 
-// Display hourly weather forecast for the next 10 hours
+/** Renders an horizontally scrollable timeline of the next 10 hours of weather. */
 function displayHourly(hourlyData) {
-    const container = document.getElementById('hourly-container');
-    container.innerHTML = '';
+    DOM.hourlyContainer.innerHTML = '';
     const currentHour = new Date().getHours();
     const unit = isCelsius ? '°' : '°F';
 
@@ -224,8 +225,8 @@ function displayHourly(hourlyData) {
         const formattedHour = rawTime.toLocaleTimeString(locale, { hour: '2-digit', minute: '2-digit' });
         
         const temp = convertTemp(hourlyData.apparent_temperature[i]);
-        const code = hourlyData.precipitation_probability[i];
-        const iconClass = weatherIcons[code] || (code > 30 ? 'fa-cloud-showers-heavy' : 'fa-cloud');
+        const code = hourlyData.weathercode?.[i] || 0;
+        const iconClass = weatherIcons[code] || 'fa-cloud';
 
         const hourBox = document.createElement('div');
         hourBox.className = 'hourly-item';
@@ -234,16 +235,15 @@ function displayHourly(hourlyData) {
             <i class="fas ${iconClass} hourly-icon"></i>
             <span class="hourly-temp">${temp}${unit}</span>
         `;
-        container.appendChild(hourBox);
+        DOM.hourlyContainer.appendChild(hourBox);
     }
 }
 
-// Display 5-day weather forecast
+/** Renders the 7-day forecast list with day name, icon, condition, and temps. */
 function displayForecast(dailyData) {
-    const container = document.getElementById('forecast-container');
-    if (!container) return;
+    if (!DOM.forecastContainer) return;
     
-    container.innerHTML = '';
+    DOM.forecastContainer.innerHTML = '';
     
     // Defensive checks for dailyData
     if (!dailyData || !dailyData.time || !Array.isArray(dailyData.time)) {
@@ -253,7 +253,7 @@ function displayForecast(dailyData) {
     
     const unit = isCelsius ? '°' : '°F';
 
-    for (let i = 1; i <= 5 && i < dailyData.time.length; i++) {
+    for (let i = 1; i <= 7 && i < dailyData.time.length; i++) {
         try {
             const timestamp = dailyData.time[i];
             if (!timestamp) break;
@@ -288,14 +288,14 @@ function displayForecast(dailyData) {
                     ${minTemp ? `<span class="forecast-low">${minTemp}${unit}</span>` : ''}
                 </div>
             `;
-            container.appendChild(forecastItem);
+            DOM.forecastContainer.appendChild(forecastItem);
         } catch (error) {
             console.error('Error creating forecast item:', error);
         }
     }
 }
 
-// Refresh weather display when language or temperature unit changes
+/** Re-renders all weather sections after a language or unit change without re-fetching data. */
 function refreshWeatherDisplay() {
     const namePart = DOM.cityName.textContent.split(',')[0].trim();
     const countryPart = DOM.cityName.textContent.split(',')[1]?.trim() || '';
@@ -311,7 +311,7 @@ function refreshWeatherDisplay() {
     displayForecast(currentWeatherData.daily);
 }
 
-// Fetch weather data by city name
+/** Fetches weather for a city and updates all sections of the page. */
 async function fetchWeather(city) {
     DOM.loading.style.display = 'block';
     DOM.errorMessage.style.display = 'none';
@@ -334,6 +334,7 @@ async function fetchWeather(city) {
         displayHourly(weatherData.hourly);
         displayForecast(weatherData.daily);
         saveToHistory(geoData.name);
+        saveLastCity(geoData.name);
         renderHistory();
 
         if (map && marker) {
@@ -348,7 +349,7 @@ async function fetchWeather(city) {
     }
 }
 
-// Initialize Leaflet map with click-to-search functionality
+/** Initializes the Leaflet map. Clicking anywhere on the map fetches weather for that location. */
 function initMap() {
     const mapContainer = document.getElementById('map-container');
     if (!mapContainer) return; // Exit if map container doesn't exist
@@ -410,14 +411,16 @@ function initMap() {
     });
 }
 
-// Event listeners
+// ============= Event listeners =============
+
+/** Search form submission - triggers weather fetch for the entered city. */
 DOM.searchForm.addEventListener('submit', (e) => {
     e.preventDefault();
     const city = DOM.cityInput.value.trim();
     if (city) fetchWeather(city);
 });
 
-// Handle geolocation button click
+/** Geolocation button - gets the user's current position and fetches weather for it. */
 DOM.locationBtn.addEventListener('click', () => {
     const t = translations[currentLang] || translations.en;
     if (!navigator.geolocation) {
@@ -473,7 +476,7 @@ DOM.locationBtn.addEventListener('click', () => {
     });
 });
 
-// Handle temperature unit toggle (Celsius/Fahrenheit)
+/** Unit toggle - switches between Celsius and Fahrenheit. */
 DOM.unitToggle.addEventListener('click', () => {
     if (!currentWeatherData) return;
     
@@ -482,7 +485,7 @@ DOM.unitToggle.addEventListener('click', () => {
     refreshWeatherDisplay(); // Recalculate and refresh display
 });
 
-// Handle language switch button
+/** Language switch button opens the language selection modal. */
 if (DOM.langSwitchBtn) {
     DOM.langSwitchBtn.addEventListener('click', () => {
         const modal = document.getElementById('language-modal');
@@ -490,9 +493,15 @@ if (DOM.langSwitchBtn) {
     });
 }
 
-// Initialize app when DOM is fully loaded
+/** App entry point - runs when the page finishes loading. */
 document.addEventListener('DOMContentLoaded', () => {
     checkLanguage();
     renderHistory();
     initMap();
+
+    // Load last searched city on startup
+    const lastCity = getLastCity();
+    if (lastCity) {
+        fetchWeather(lastCity);
+    }
 });
