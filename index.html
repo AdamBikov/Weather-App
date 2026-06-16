@@ -1,96 +1,223 @@
 <!DOCTYPE html>
-<html lang="bg">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weather App</title>
+    <title>Weather - Premium Forecast</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-    <div id="language-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(12px); z-index: 9999; justify-content: center; align-items: center; animation: fadeIn 0.3s ease;">
-    <div style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 30px; border-radius: 24px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 20px 50px rgba(0,0,0,0.5);">
-        <h3 id="modal-title" style="margin-bottom: 20px; font-weight: 600; color: #fff;">Choose Language / Изберете език</h3>
-        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
-            <button class="lang-btn" data-lang="bg" style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 12px; border: none; color: #fff; cursor: pointer; font-weight: 500;">Български 🇧🇬</button>
-            <button class="lang-btn" data-lang="en" style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 12px; border: none; color: #fff; cursor: pointer; font-weight: 500;">English 🇬🇧</button>
-            <button class="lang-btn" data-lang="de" style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 12px; border: none; color: #fff; cursor: pointer; font-weight: 500;">Deutsch 🇩🇪</button>
-            <button class="lang-btn" data-lang="sk" style="padding: 10px; background: rgba(255,255,255,0.1); border-radius: 12px; border: none; color: #fff; cursor: pointer; font-weight: 500;">Slovenčina 🇸🇰</button>
-        </div>
-    </div>
-    </div>
-
-    <div class="container">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h1 style="margin: 0;">Прогноза за времето</h1>
-            <button id="lang-switch-btn" style="padding: 8px 14px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 12px; color: #fff; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.3s ease;">🌐 EN</button>
-        </div>
-        
-        <form id="search-form" class="search-box">
-            <div class="input-wrapper">
-                <input type="text" id="city-input" placeholder="Enter city in English..." required>
-                <i id="location-btn" class="fas fa-crosshairs"></i>
+    <!-- Language Selection Modal -->
+    <div id="language-modal" class="modal-overlay">
+        <div class="modal-content">
+            <h3 class="modal-title">Choose Language</h3>
+            <p class="modal-subtitle">Select your preferred language</p>
+            <div class="language-grid">
+                <button class="lang-btn" data-lang="en">
+                    <span class="lang-flag">🇬🇧</span>
+                    <span class="lang-name">English</span>
+                </button>
+                <button class="lang-btn" data-lang="bg">
+                    <span class="lang-flag">🇧🇬</span>
+                    <span class="lang-name">Български</span>
+                </button>
+                <button class="lang-btn" data-lang="de">
+                    <span class="lang-flag">🇩🇪</span>
+                    <span class="lang-name">Deutsch</span>
+                </button>
+                <button class="lang-btn" data-lang="sk">
+                    <span class="lang-flag">🇸🇰</span>
+                    <span class="lang-name">Slovenčina</span>
+                </button>
             </div>
-        <button type="submit">Search</button>
-        </form>
-        
-        <div id="search-history" class="history-container"></div>
-        
-        <div id="map-container" style="margin-bottom: 20px;">
-            <div id="map"></div>
-        </div>
-        
-        <div id="loading" style="display: none;">Loading...</div>
-        <div id="error-message" style="display: none;"></div>
-        
-        <div id="weather-result" class="weather-card" style="display: none;">
-            <h2 id="city-name"></h2>
-            
-            <div class="main-info">
-                <i id="weather-icon" class="fas fa-cloud fa-3x"></i>
-                <span id="temperature">--°C</span>
-            </div>
-            
-            <div id="weather-condition"></div>
-            <p id="last-updated" style="font-size: 0.8rem; color: #7a8499; margin-top: 5px;"></p>
-
-            <div id="hourly-container" class="hourly-scroll"></div>
-
-            <div class="metrics-grid">
-                <div class="metric-widget">
-                    <i class="fas fa-thermometer-half"></i>
-                    <span>Feels like</span>
-                    <strong id="apparent-temp">--°C</strong>
-                </div>
-                <div class="metric-widget">
-                    <i class="fas fa-sun"></i>
-                    <span>UV Index</span>
-                    <strong id="uv-index">--</strong>
-                </div>
-                <div class="metric-widget">
-                    <i class="fas fa-tint"></i>
-                    <span>Rain chance</span>
-                    <strong id="rain-chance">--%</strong>
-                </div>
-                <div class="metric-widget">
-                    <i class="fas fa-wind"></i>
-                    <span>Wind</span>
-                    <strong id="wind-speed">-- km/h</strong>
-                </div>
-            </div>
-
-            <div class="sun-metrics">
-                <p id="sunrise-time"><i class="fas fa-sun"></i> Sunrise: --:--</p>
-                <p id="sunset-time"><i class="fas fa-moon"></i> Sunset: --:--</p>
-            </div>
-
-            <div id="forecast-container" class="forecast-grid"></div>
-            
-            <button id="unit-toggle">To °F</button>
         </div>
     </div>
 
+    <!-- Main Application -->
+    <main class="app-container">
+        <!-- Dynamic Background -->
+        <div class="background-layer" id="bg-layer"></div>
+        <div class="animated-bg">
+            <div class="gradient-orb orb-1"></div>
+            <div class="gradient-orb orb-2"></div>
+            <div class="gradient-orb orb-3"></div>
+        </div>
+
+        <!-- Header with Navigation -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1 class="app-title">Weather</h1>
+                <button id="lang-switch-btn" class="lang-switch-btn" title="Change language">
+                    <i class="fas fa-globe"></i>
+                </button>
+            </div>
+        </header>
+
+        <!-- Content Wrapper -->
+        <div class="content-wrapper">
+            <!-- Search Section -->
+            <section class="search-section">
+                <form id="search-form" class="search-form">
+                    <div class="search-input-wrapper">
+                        <i class="fas fa-magnifying-glass"></i>
+                        <input 
+                            type="text" 
+                            id="city-input" 
+                            class="search-input" 
+                            placeholder="Search city..."
+                            required
+                        >
+                        <button type="button" id="location-btn" class="location-btn" title="Use my location">
+                            <i class="fas fa-location-crosshairs"></i>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Search History -->
+                <div id="search-history" class="search-history"></div>
+            </section>
+
+            <!-- Loading & Error States -->
+            <div id="loading" class="loading-state">
+                <div class="spinner"></div>
+                <p>Loading weather data...</p>
+            </div>
+            <div id="error-message" class="error-state"></div>
+
+            <!-- Weather Content (Hidden Initially) -->
+            <div id="weather-content" class="weather-content" style="display: none;">
+                
+                <!-- Hero Weather Section -->
+                <section class="hero-section">
+                    <div class="hero-card">
+                        <div class="hero-location">
+                            <h2 id="city-name" class="city-name">--</h2>
+                            <p id="last-updated" class="update-time">--</p>
+                        </div>
+
+                        <div class="hero-main">
+                            <div class="weather-icon-container">
+                                <i id="weather-icon" class="fas fa-cloud fa-4x"></i>
+                            </div>
+                            <div class="temperature-display">
+                                <span id="temperature" class="temperature">--°</span>
+                                <div class="temp-range">
+                                    <span id="temp-high" class="temp-high">H: --°</span>
+                                    <span id="temp-low" class="temp-low">L: --°</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="weather-description">
+                            <p id="weather-condition" class="condition-text">--</p>
+                            <p id="feels-like-text" class="feels-like-hint">Feels like --°</p>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Hourly Forecast Timeline -->
+                <section class="forecast-section">
+                    <h3 class="section-title">Hourly Forecast</h3>
+                    <div id="hourly-container" class="hourly-timeline"></div>
+                </section>
+
+                <!-- Insight Widgets -->
+                <section class="insights-section">
+                    <h3 class="section-title">Weather Details</h3>
+                    <div class="insights-grid">
+                        <div class="insight-card">
+                            <div class="insight-icon">
+                                <i class="fas fa-wind"></i>
+                            </div>
+                            <div class="insight-content">
+                                <p class="insight-label">Wind Speed</p>
+                                <p id="wind-speed" class="insight-value">-- km/h</p>
+                            </div>
+                        </div>
+
+                        <div class="insight-card">
+                            <div class="insight-icon">
+                                <i class="fas fa-droplet"></i>
+                            </div>
+                            <div class="insight-content">
+                                <p class="insight-label">Rain Chance</p>
+                                <p id="rain-chance" class="insight-value">--%</p>
+                            </div>
+                        </div>
+
+                        <div class="insight-card">
+                            <div class="insight-icon">
+                                <i class="fas fa-sun"></i>
+                            </div>
+                            <div class="insight-content">
+                                <p class="insight-label">UV Index</p>
+                                <p id="uv-index" class="insight-value">--</p>
+                            </div>
+                        </div>
+
+                        <div class="insight-card">
+                            <div class="insight-icon">
+                                <i class="fas fa-thermometer"></i>
+                            </div>
+                            <div class="insight-content">
+                                <p class="insight-label">Feels Like</p>
+                                <p id="apparent-temp" class="insight-value">--°</p>
+                            </div>
+                        </div>
+
+                        <div class="insight-card">
+                            <div class="insight-icon">
+                                <i class="fas fa-sunrise"></i>
+                            </div>
+                            <div class="insight-content">
+                                <p class="insight-label">Sunrise</p>
+                                <p id="sunrise-time" class="insight-value">--:--</p>
+                            </div>
+                        </div>
+
+                        <div class="insight-card">
+                            <div class="insight-icon">
+                                <i class="fas fa-moon"></i>
+                            </div>
+                            <div class="insight-content">
+                                <p class="insight-label">Sunset</p>
+                                <p id="sunset-time" class="insight-value">--:--</p>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- 7-Day Forecast -->
+                <section class="forecast-section">
+                    <h3 class="section-title">7-Day Forecast</h3>
+                    <div id="forecast-container" class="forecast-list"></div>
+                </section>
+
+                <!-- Map Card -->
+                <section class="map-section">
+                    <div class="map-card">
+                        <div id="map" class="map-container"></div>
+                    </div>
+                </section>
+
+                <!-- Unit Toggle -->
+                <section class="settings-section">
+                    <button id="unit-toggle" class="unit-toggle-btn">
+                        <i class="fas fa-temperature-high"></i>
+                        <span id="unit-text">Switch to °F</span>
+                    </button>
+                </section>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Scripts -->
     <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script type="module" src="js/main.js"></script>
 </body>

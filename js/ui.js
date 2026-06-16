@@ -7,25 +7,26 @@ export const DOM = {
     historyContainer: document.getElementById('search-history'),
     loading: document.getElementById('loading'),
     errorMessage: document.getElementById('error-message'),
-    weatherResult: document.getElementById('weather-result'),
+    weatherContent: document.getElementById('weather-content'),
     cityName: document.getElementById('city-name'),
     temperature: document.getElementById('temperature'),
     weatherCondition: document.getElementById('weather-condition'),
     weatherIcon: document.getElementById('weather-icon'),
     lastUpdated: document.getElementById('last-updated'),
     unitToggle: document.getElementById('unit-toggle'),
+    
+    // Hourly forecast container
     hourlyContainer: document.getElementById('hourly-container'),
     
-    // Weather metrics widgets
-    apparentTemp: document.getElementById('apparent-temp'),
-    uvIndex: document.getElementById('uv-index'),
+    // Weather metrics/insights
     rainChance: document.getElementById('rain-chance'),
     windSpeed: document.getElementById('wind-speed'),
     
-    // Sun rise/set metrics
-    sunriseTime: document.getElementById('sunrise-time'),
-    sunsetTime: document.getElementById('sunset-time'),
-    map: document.getElementById('map')
+    // Forecast containers
+    forecastContainer: document.getElementById('forecast-container'),
+    
+    // Map
+    mapContainer: document.getElementById('map-container')
 };
 
 // Weather condition icon mappings (WMO codes)
@@ -145,6 +146,9 @@ export const translations = {
         title: "Прогноза за времето",
         placeholder: "Въведете град на английски...",
         search: "Търси",
+        hourlyLabel: "Почасова прогноза",
+        detailsLabel: "Детайли за времето",
+        forecastLabel: "7-дневна прогноза",
         feelsLike: "Усеща се като",
         uvIndex: "UV Индекс",
         rainChance: "Шанс за дъжд",
@@ -164,6 +168,9 @@ export const translations = {
         title: "Weather Forecast",
         placeholder: "Enter city in English...",
         search: "Search",
+        hourlyLabel: "Hourly Forecast",
+        detailsLabel: "Weather Details",
+        forecastLabel: "7-Day Forecast",
         feelsLike: "Feels like",
         uvIndex: "UV Index",
         rainChance: "Rain chance",
@@ -183,6 +190,9 @@ export const translations = {
         title: "Wettervorhersage",
         placeholder: "Stadt auf Englisch eingeben...",
         search: "Suchen",
+        hourlyLabel: "Stündliche Vorhersage",
+        detailsLabel: "Wetterdetails",
+        forecastLabel: "7-Tage-Vorhersage",
         feelsLike: "Gefühlt wie",
         uvIndex: "UV-Index",
         rainChance: "Regenwahrscheinlichkeit",
@@ -202,6 +212,9 @@ export const translations = {
         title: "Predpoveď počasia",
         placeholder: "Zadajte mesto v angličtine...",
         search: "Hľadať",
+        hourlyLabel: "Hodinová predpoveď",
+        detailsLabel: "Detaily počasia",
+        forecastLabel: "7-dňová predpoveď",
         feelsLike: "Pocitová teplota",
         uvIndex: "UV Index",
         rainChance: "Šanca na dážď",
