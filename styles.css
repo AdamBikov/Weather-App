@@ -302,8 +302,8 @@ body {
 
 .search-input-wrapper:focus-within {
     border-color: var(--color-accent-primary);
-    background: rgba(255, 255, 255, 0.08);
-    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+    background: rgba(96, 165, 250, 0.08);
+    box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.15);
 }
 
 .search-input-wrapper i:first-child {
@@ -325,6 +325,15 @@ body {
 
 .search-input::placeholder {
     color: var(--color-text-tertiary);
+}
+
+/* Prevent browser autofill from turning the search box white */
+.search-input:-webkit-autofill,
+.search-input:-webkit-autofill:hover,
+.search-input:-webkit-autofill:focus {
+    -webkit-box-shadow: 0 0 0 1000px var(--color-bg-tertiary) inset !important;
+    -webkit-text-fill-color: var(--color-text-primary) !important;
+    caret-color: var(--color-text-primary);
 }
 
 .location-btn {

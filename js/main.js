@@ -216,6 +216,7 @@ function displayWeather(data, name, country, dailyData, hourlyData) {
 /** Renders an horizontally scrollable timeline of the next 10 hours of weather. */
 function displayHourly(hourlyData) {
     DOM.hourlyContainer.innerHTML = '';
+    if (!hourlyData || !hourlyData.time || !hourlyData.apparent_temperature) return;
     const currentHour = new Date().getHours();
     const unit = isCelsius ? '°' : '°F';
 
@@ -351,8 +352,9 @@ async function fetchWeather(city) {
 
 /** Initializes the Leaflet map. Clicking anywhere on the map fetches weather for that location. */
 function initMap() {
+    if (typeof L === 'undefined') return; // Leaflet CDN not loaded
     const mapContainer = document.getElementById('map-container');
-    if (!mapContainer) return; // Exit if map container doesn't exist
+    if (!mapContainer) return;
     
     const defaultLat = 42.6977;
     const defaultLon = 23.3219;

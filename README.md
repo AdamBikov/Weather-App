@@ -2,6 +2,8 @@
 
 A premium weather forecast application built for a 9th-grade school project. Shows current weather, hourly forecast, 7-day forecast, and an interactive map.
 
+> **Live at:** [vremetosega.free.bg](https://vremetosega.free.bg)
+
 ## Features
 
 - **Current weather** — Temperature, condition, feels-like, wind, UV index, sunrise/sunset
@@ -34,11 +36,10 @@ Weather-App/
 ├── index.html          Main HTML page with all UI sections
 ├── styles.css          All styling (dark theme, responsive, animations)
 ├── README.md           This file
-└── js/
-    ├── main.js         App logic: connects API, storage, and UI
-    ├── api.js          Fetches data from Open-Meteo APIs
-    ├── ui.js           DOM references, icon mappings, translations
-    └── storage.js      Saves search history and last city to localStorage
+├── main.js             App logic: connects API, storage, and UI
+├── api.js              Fetches data from Open-Meteo APIs
+├── ui.js               DOM references, icon mappings, translations
+└── storage.js          Saves search history and last city to localStorage
 ```
 
 ## Code Overview
@@ -84,7 +85,8 @@ No build tools or installations required:
 2. Open `index.html` in any modern browser (or visit [vremetosega.free.bg](https://vremetosega.free.bg))
 3. Choose your language and allow location (or search for a city)
 
-> **Note:** The app uses ES Modules (`type="module"`), so it needs to be served from a local server or opened via a localhost. You can use VS Code's Live Server extension or Python's `http.server`.
+> **Note 1:** The app uses ES Modules (`type="module"`), so it needs to be served from a local server. Use VS Code's Live Server extension or Python's `http.server`.
+> **Note 2:** Geolocation requires HTTPS. On free.bg (HTTP), the location button will show an error — search by city name instead.
 
 ## What I Learned
 
