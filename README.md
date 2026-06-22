@@ -78,10 +78,10 @@ No API keys are needed — all services are free and open.
 
 ## Setup
 
-No build tools or installations required. Just open `index.html` in a browser:
+No build tools or installations required:
 
 1. Clone or download this repository
-2. Open `index.html` in any modern browser
+2. Open `index.html` in any modern browser (or visit [vremetosega.free.bg](https://vremetosega.free.bg))
 3. Choose your language and allow location (or search for a city)
 
 > **Note:** The app uses ES Modules (`type="module"`), so it needs to be served from a local server or opened via a localhost. You can use VS Code's Live Server extension or Python's `http.server`.
